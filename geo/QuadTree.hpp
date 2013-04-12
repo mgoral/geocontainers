@@ -28,7 +28,7 @@ private:
     typedef std::array<QuadNode<ObjectType>*, 4> Nodes;
 
 public:
-    QuadNode(int startX, int startY, int width, size_t capacity, QuadNode* parent = nullptr)
+    QuadNode(int startX, int startY, int width, size_t capacity, QuadNode* nodeParent = nullptr)
         : startX(startX), startY(startY), width(width), capacity(capacity)
     {
         if (width < 1)
@@ -37,7 +37,7 @@ public:
             throw std::invalid_argument("size is not power of 2");
 
         childNodes.fill(nullptr);
-        parent = parent;
+        parent = nodeParent;
     }
 
     ~QuadNode()
