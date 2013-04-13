@@ -158,8 +158,8 @@ private:
  * This way the whole field is divided into smaller regions, each of them containing only adjacent
  * objects. Thanks to this e.g. efficent collision detection algorithms might be performed.
  *
- * ObjectType - type of objects that will be stored inside QuadTree
- * width - absolute total size of a field. Must be higher than 0 and a power of 2.
+ * @param ObjectType Type of objects that will be stored inside QuadTree.
+ * @param width Absolute total size of a field. Must be higher than 0 and a power of 2.
  */
 template <typename ObjectType, int width>
 class QuadTree {
