@@ -2,6 +2,8 @@
 
 #include "Coordinates.hpp"
 
+#include <iostream>
+
 using namespace testing;
 using namespace geo;
 
@@ -43,48 +45,48 @@ TEST_F(CoordinatesTests, DifferentCoordinatesAreNotEqual)
 }
 
 //
-// AffineCoordinateTransformerTests
+// AffineCoordinatetrerTests
 //
 
-TEST_F(AffineCoordTrTests, CorrectTransformationWithoutShift)
+TEST_F(AffineCoordTrTests, CorrecttrationWithoutShift)
 {
     Coordinates orig(10, 10);
-    AffineCoordTr<0, 0, 1, 1> transform(0, 0, 10, 10);
+    AffineCoordTr<0, 0, 1, 1> tr(0, 0, 10, 10);
 
-    Coordinates newCoord = transform.forward(orig);
+    Coordinates newCoord = tr.forward(orig);
 
     ASSERT_DOUBLE_EQ(1, newCoord.x());
     ASSERT_DOUBLE_EQ(1, newCoord.y());
 }
 
-TEST_F(AffineCoordTrTests, CorrectTransformationWithShift)
+TEST_F(AffineCoordTrTests, CorrecttrationWithShift)
 {
     Coordinates orig(10, 10);
-    AffineCoordTr<1, 1, 1, 1> transform(0, 0, 10, 10);
+    AffineCoordTr<1, 1, 1, 1> tr(0, 0, 10, 10);
 
-    Coordinates newCoord = transform.forward(orig);
+    Coordinates newCoord = tr.forward(orig);
 
     ASSERT_DOUBLE_EQ(2, newCoord.x());
     ASSERT_DOUBLE_EQ(2, newCoord.y());
 }
 
-TEST_F(AffineCoordTrTests, CorrectReverseTransformationWithoutShift)
+TEST_F(AffineCoordTrTests, CorrectReversetrationWithoutShift)
 {
     Coordinates orig(10, 10);
-    AffineCoordTr<0, 0, 1, 1> transform(0, 0, 10, 10);
+    AffineCoordTr<0, 0, 1, 1> tr(0, 0, 10, 10);
 
-    Coordinates newCoord = transform.reverse(transform.forward(orig));
+    Coordinates newCoord = tr.reverse(tr.forward(orig));
 
     ASSERT_DOUBLE_EQ(orig.x(), newCoord.x());
     ASSERT_DOUBLE_EQ(orig.y(), newCoord.y());
 }
 
-TEST_F(AffineCoordTrTests, CorrectReverseTransformationWithShift)
+TEST_F(AffineCoordTrTests, CorrectReversetrationWithShift)
 {
     Coordinates orig(10, 10);
-    AffineCoordTr<1, 1, 1, 1> transform(0, 0, 10, 10);
+    AffineCoordTr<1, 1, 1, 1> tr(0, 0, 10, 10);
 
-    Coordinates newCoord = transform.reverse(transform.forward(orig));
+    Coordinates newCoord = tr.reverse(tr.forward(orig));
 
     ASSERT_DOUBLE_EQ(orig.x(), newCoord.x());
     ASSERT_DOUBLE_EQ(orig.y(), newCoord.y());
@@ -94,44 +96,44 @@ TEST_F(AffineCoordTrTests, CorrectReverseTransformationWithShift)
 //
 //
 
-TEST_F(AffineCoordTrTests, CorrectTransformationOfNonEdgePointWithoutShift)
+TEST_F(AffineCoordTrTests, CorrecttrationOfNonEdgePointWithoutShift)
 {
     Coordinates orig(8, 10);
-    AffineCoordTr<0, 0, 1, 1> transform(0, 0, 10, 10);
+    AffineCoordTr<0, 0, 1, 1> tr(0, 0, 10, 10);
 
-    Coordinates newCoord = transform.forward(orig);
+    Coordinates newCoord = tr.forward(orig);
     ASSERT_DOUBLE_EQ(0.8, newCoord.x());
     ASSERT_DOUBLE_EQ(1, newCoord.y());
 }
 
-TEST_F(AffineCoordTrTests, CorrectTransformationOfNonEdgePointWithShift)
+TEST_F(AffineCoordTrTests, CorrecttrationOfNonEdgePointWithShift)
 {
     Coordinates orig(8, 10);
-    AffineCoordTr<1, 1, 1, 1> transform(0, 0, 10, 10);
+    AffineCoordTr<1, 1, 1, 1> tr(0, 0, 10, 10);
 
-    Coordinates newCoord = transform.forward(orig);
+    Coordinates newCoord = tr.forward(orig);
 
     ASSERT_DOUBLE_EQ(1.8, newCoord.x());
     ASSERT_DOUBLE_EQ(2, newCoord.y());
 }
 
-TEST_F(AffineCoordTrTests, CorrectReverseTransformationOfNonEdgePointWithoutShift)
+TEST_F(AffineCoordTrTests, CorrectReversetrationOfNonEdgePointWithoutShift)
 {
     Coordinates orig(7, 9);
-    AffineCoordTr<0, 0, 1, 1> transform(0, 0, 10, 10);
+    AffineCoordTr<0, 0, 1, 1> tr(0, 0, 10, 10);
 
-    Coordinates newCoord = transform.reverse(transform.forward(orig));
+    Coordinates newCoord = tr.reverse(tr.forward(orig));
 
     ASSERT_DOUBLE_EQ(orig.x(), newCoord.x());
     ASSERT_DOUBLE_EQ(orig.y(), newCoord.y());
 }
 
-TEST_F(AffineCoordTrTests, CorrectReverseTransformationOfNonEdgePointWithShift)
+TEST_F(AffineCoordTrTests, CorrectReversetrationOfNonEdgePointWithShift)
 {
     Coordinates orig(7, 9);
-    AffineCoordTr<1, 1, 1, 1> transform(0, 0, 10, 10);
+    AffineCoordTr<1, 1, 1, 1> tr(0, 0, 10, 10);
 
-    Coordinates newCoord = transform.reverse(transform.forward(orig));
+    Coordinates newCoord = tr.reverse(tr.forward(orig));
 
     ASSERT_DOUBLE_EQ(orig.x(), newCoord.x());
     ASSERT_DOUBLE_EQ(orig.y(), newCoord.y());
