@@ -86,8 +86,6 @@ public:
 private:
     double scaleX;
     double scaleY;
-    double backScaleX;
-    double backScaleY;
     int shiftX;
     int shiftY;
 };
