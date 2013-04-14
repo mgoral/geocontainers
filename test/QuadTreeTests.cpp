@@ -40,94 +40,124 @@ class QuadTreeTests : public Test
 
 TEST_F(QuadTreeTests, InitOkCase)
 {
-    ASSERT_NO_THROW((QuadTree<int,16>()));
+    ASSERT_NO_THROW((QuadTree<int>(1)));
 }
 
 TEST_F(QuadTreeTests, InitThrowsExceptionWhenSizeIsTooSmall)
 {
-    ASSERT_THROW((QuadTree<int, 0>()), std::invalid_argument);
+    ASSERT_THROW((QuadTree<int>(0)), std::invalid_argument);
 }
 
 TEST_F(QuadTreeTests, InitThrowsExceptionWhenSizeIsNotAPowerOf2)
 {
-    ASSERT_THROW((QuadTree<int, 7>()), std::invalid_argument);
+    ASSERT_THROW((QuadTree<int>(3)), std::invalid_argument);
 }
 
-TEST_F(QuadTreeTests, InsertValueFromWithinRangeWithDefaultCtor)
+TEST_F(QuadTreeTests, InsertValueFromWithinRangeWithOnlyWidthSpecified)
 {
-    QuadTree<std::string, 4> tree;
+    QuadTree<std::string> tree(1);
+    ASSERT_TRUE(tree.insert(0, 0, "fake"));
     ASSERT_TRUE(tree.insert(1, 1, "fake"));
 }
 
-TEST_F(QuadTreeTests, InsertValueFromRangeBeyondWithDefaultCtor)
+TEST_F(QuadTreeTests, InsertValueFromBeyondRangeWithOnlyWidthSpecified)
 {
-    QuadTree<std::string, 4> tree;
-    ASSERT_FALSE(tree.insert(4, 4, "fake"));
+    QuadTree<std::string> tree(1);
+    ASSERT_FALSE(tree.insert(1.001, 1.001, "fake"));
+    ASSERT_FALSE(tree.insert(-0.0001, -0.0001, "fake"));
 }
 
-TEST_F(QuadTreeTests, InsertValueFromWithinRangeWithNonDefaultCtor)
+TEST_F(QuadTreeTests, InsertValueFromWithinRangeWithStartingPointsSpecified)
 {
-    QuadTree<std::string, 4> tree(2, 2);
+    QuadTree<std::string> tree(4, 2, 2);
     ASSERT_TRUE(tree.insert(2, 2, "fake"));
+    ASSERT_TRUE(tree.insert(6, 6, "fake"));
 }
 
-TEST_F(QuadTreeTests, InsertValueFromRangeBeyondWithNonDefaultCtor)
+TEST_F(QuadTreeTests, InsertValueFromBeyondRangeWithStartingPointsSpecified)
 {
-    QuadTree<std::string, 4> tree(2, 2);
-    ASSERT_FALSE(tree.insert(6, 6, "fake"));
+    QuadTree<std::string> tree(4, 2, 2);
+    ASSERT_FALSE(tree.insert(6.001, 6.001, "fake"));
+    ASSERT_FALSE(tree.insert(1.9999, 1.9999, "fake"));
+}
+
+TEST_F(QuadTreeTests, InsertValueFromWithinRangeWithCapacitySpecified)
+{
+    QuadTree<std::string> tree(8, 2);
+    ASSERT_TRUE(tree.insert(8, 8, "fake"));
+    ASSERT_TRUE(tree.insert(0, 0, "fake"));
+}
+
+TEST_F(QuadTreeTests, InsertValueFromBeyondRangeWithCapacitySpecified)
+{
+    QuadTree<std::string> tree(8, 2);
+    ASSERT_FALSE(tree.insert(8.001, 8.001, "fake"));
+    ASSERT_FALSE(tree.insert(-0.001, -0.001, "fake"));
+}
+
+TEST_F(QuadTreeTests, InsertValueFromWithinRangeWithEverythingSpecified)
+{
+    QuadTree<std::string> tree(2, 1, 1, 3);
+    ASSERT_TRUE(tree.insert(1, 1, "fake"));
+}
+
+TEST_F(QuadTreeTests, InsertValueFromBeyondRangeWithEverythingSpecified)
+{
+    QuadTree<std::string> tree(2, 1, 1, 3);
+    ASSERT_FALSE(tree.insert(3.001, 3.001, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertValueWhere_X_EqualsToLowerBoundary)
 {
-    QuadTree<std::string, 4> tree(2, 2);
+    QuadTree<std::string> tree(4, 2, 2);
     ASSERT_TRUE(tree.insert(2, 4, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertValueWhere_X_EqualsToHigherBoundary)
 {
-    QuadTree<std::string, 4> tree(2, 2);
-    ASSERT_TRUE(tree.insert(5, 4, "fake"));
+    QuadTree<std::string> tree(4, 2, 2);
+    ASSERT_TRUE(tree.insert(6, 4, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertValueWhere_Y_EqualsToLowerBoundary)
 {
-    QuadTree<std::string, 4> tree(2, 2);
+    QuadTree<std::string> tree(4, 2, 2);
     ASSERT_TRUE(tree.insert(4, 2, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertValueWhere_Y_EqualsToHigherBoundary)
 {
-    QuadTree<std::string, 4> tree(2, 2);
-    ASSERT_TRUE(tree.insert(4, 5, "fake"));
+    QuadTree<std::string> tree(4, 2, 2);
+    ASSERT_TRUE(tree.insert(4, 6, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertValueWhere_X_IsLowerThanLowerBoundary)
 {
-    QuadTree<std::string, 4> tree(2, 2);
-    ASSERT_FALSE(tree.insert(1, 4, "fake"));
+    QuadTree<std::string> tree(4, 2, 2);
+    ASSERT_FALSE(tree.insert(1.999, 4, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertValueWhere_X_IsHigherThanHigherBoundary)
 {
-    QuadTree<std::string, 4> tree(2, 2);
-    ASSERT_FALSE(tree.insert(6, 4, "fake"));
+    QuadTree<std::string> tree(4, 2, 2);
+    ASSERT_FALSE(tree.insert(6.001, 4, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertValueWhere_Y_IsLowerThanLowerBoundary)
 {
-    QuadTree<std::string, 4> tree(2, 2);
-    ASSERT_FALSE(tree.insert(4, 1, "fake"));
+    QuadTree<std::string> tree(4, 2, 2);
+    ASSERT_FALSE(tree.insert(4, 1.999, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertValueWhere_Y_IsHigherThanHigherBoundary)
 {
-    QuadTree<std::string, 4> tree(2, 2);
-    ASSERT_FALSE(tree.insert(4, 6, "fake"));
+    QuadTree<std::string> tree(4, 2, 2);
+    ASSERT_FALSE(tree.insert(4, 6.001, "fake"));
 }
 
 TEST_F(QuadTreeTests, InsertASingleObjectTwiceProperly)
 {
-    QuadTree<FakeClass, 4> tree(2, 2);
+    QuadTree<FakeClass> tree(4, 2, 2);
     FakeClass foo;
 
     EXPECT_TRUE(tree.insert(3, 3, foo));
