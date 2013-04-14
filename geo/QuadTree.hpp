@@ -186,28 +186,34 @@ Nodes childNodes;
 
 
 /**
-* QuadTree<ObjectType, size_t maxLevels=10> main class to construct a Quad Tree. Graphically it
-* represents a two-dimension field with objects from the range of [x, y]. That field might be
-* divided into 4 regions (tree nodes) which might contain a particular number of objects described
-* by [x, y] * coordinates. If a new object is added to a region which already contains a maximum
-* number of * objects (so its capacity is exceeded), that region is further divided into another 4
-* subregions. Each object stored in a parent region is then added to appropriate subregion.
+* QuadTree<ElementType, size_t maxLevels=10> main class to construct a Quad Tree. Graphically it
+* represents a two-dimension field with elements from the range of [x, y]. That field might be
+* divided into 4 regions (tree nodes) which might contain a particular number of elements described
+* by [x, y] coordinates. If a new element is added to a region which already contains a maximum
+* number of elements (so its capacity is exceeded), that region is further divided into another 4
+* subregions. Each element stored in a parent region is then added to appropriate subregion.
 *
 * This way the whole field is divided into smaller regions, each of them containing only adjacent
-* objects. Thanks to this e.g. efficent collision detection algorithms might be performed.
+* elements. Thanks to this e.g. efficent collision detection algorithms might be performed.
 *
-* @param ObjectType Type of objects that will be stored inside QuadTree.
-* @param maxLevels  Maximum number of tree levels (used for practical reasons). Must be higher than
-*                   0 and smaller than 32.
+* @param ElementType Type of elements that will be stored inside QuadTree.
+* @param maxLevels   Maximum number of tree levels (used for practical reasons). Must be higher than
+*                    0 and smaller than 32.
 */
-template <typename ObjectType, size_t maxLevels = 10>
+template <typename ElementType, size_t maxLevels = 10>
 class QuadTree
 {
 private:
-    typedef ObjectWithLocationCode<ObjectType, maxLevels> StoredObject;
-    typedef QuadNode<ObjectType, maxLevels> TreeNode;
+    typedef ObjectWithLocationCode<ElementType, maxLevels> StoredObject;
+    typedef QuadNode<ElementType, maxLevels> TreeNode;
 
 public:
+    /**
+     * QuadTree Constructor.
+     * Parameters startX, startY and nodeCapacity are set to 0.
+     *
+     *  @see QuadTree(size_t width, int startX, int startY)
+     */
     explicit QuadTree(size_t width)
         : width(width), startX(0), startY(0), nodeCapacity(0),
         tr(startX, startY, width, width), root(maxLevels - 1)
@@ -215,6 +221,12 @@ public:
         checkRequirements();
     }
 
+    /**
+     * QuadTree Constructor
+     * Parameters startX and startY are set to 0.
+     *
+     *  @see QuadTree(size_t width, int startX, int startY)
+     */
     QuadTree(size_t width, size_t capacity)
         : width(width), startX(0), startY(0), nodeCapacity(capacity),
         tr(startX, startY, width, width), root(maxLevels - 1)
@@ -222,6 +234,12 @@ public:
         checkRequirements();
     }
 
+    /**
+     * QuadTree Constructor
+     * Parameter capacity is set to 0.
+     *
+     *  @see QuadTree(size_t width, int startX, int startY)
+     */
     QuadTree(size_t width, int startX, int startY)
         : width(width), startX(startX), startY(startY), nodeCapacity(0),
         tr(startX, startY, width, width), root(maxLevels - 1)
@@ -229,6 +247,19 @@ public:
         checkRequirements();
     }
 
+    /**
+     * QuadTree Constructor.
+     * Parameters startX, startY and nodeCapacity are set to 0.
+     *
+     * @param width    Width of a field that might be represented in a QuadTree. Also specifies a
+     *                 height because field must be rectangular. Width must be a power of 2.
+     * @param startX   Starting point of represented field in x-axis.
+     * @param startY   Starting point of represented field in y-axis.
+     * @param capacity Maximum capacity of a single tree node. Specifies how much elements (at most)
+     *                 can be stored in one node. An exception are nodes at the maximum level of the
+     *                 tree which shall store all remaining elements inserted into QuadTree (because
+     *                 QuadTree doesn't have a limit to maximum number of stored elements).
+     */
     QuadTree(size_t width, int startX, int startY, size_t capacity)
         : width(width), startX(startX), startY(startY), nodeCapacity(capacity),
         tr(startX, startY, width, width), root(maxLevels - 1)
@@ -242,20 +273,39 @@ public:
     QuadTree & operator=(const QuadTree&) = delete;
     QuadTree(const QuadTree&) = delete;
 
-    bool insert(double x, double y, const ObjectType& newObject)
+    /**
+     * Insert a single element into Quadtree at given coordinates. Range check of coordinates is
+     * performed. They should be in range: [startX, startX + width] x [startY, startY + width]
+     * to be inserted. Otherwise an element is not inserted.
+     *
+     * There are two overloaded versions of insert provided: one where given element is copied and
+     * one where it's moved.
+     *
+     * @param  x   X-axis coordinate of val.
+     * @param  y   Y-axis coordinate of val.
+     * @param  val Element to be added.
+     * @raturn     True if a new element has been added properly and false if not.
+     */
+    bool insert(double x, double y, const ElementType& val)
     {
         if (x > startX + width || y > startY + width || x < startX || y < startY)
             return false;
-        return insert(StoredObject(tr.forward(Coordinates(x, y)), newObject));
+        return insert(StoredObject(tr.forward(Coordinates(x, y)), val));
     }
 
-    bool insert(double x, double y, ObjectType&& newObject)
+    /**
+     * @see insert(double x, double y, const ElementType& newObject)
+     */
+    bool insert(double x, double y, ElementType&& val)
     {
         if (x > startX + width || y > startY + width || x < startX || y < startY)
             return false;
-        return insert(StoredObject(tr.forward(Coordinates(x, y)), std::move(newObject)));
+        return insert(StoredObject(tr.forward(Coordinates(x, y)), std::move(val)));
     }
 
+    /**
+     * @return Total number of elements in QuadTree.
+     */
     size_t size() const
     {
         return root.totalCount();
