@@ -38,6 +38,10 @@ class QuadTreeTests : public Test
 {
 };
 
+//
+// QuadTree tests
+//
+
 TEST_F(QuadTreeTests, InitOkCase)
 {
     ASSERT_NO_THROW((QuadTree<int>(1)));
