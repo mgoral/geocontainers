@@ -200,7 +200,7 @@ Nodes childNodes;
 
 /**
 * QuadTree<ElementType, size_t maxLevels=10> main class to construct a Quad Tree. Graphically it
-* represents a two-dimension field with elements from the range of [x, y]. That field might be
+* represents a two-dimension field with elements from the range of [x, y). That field might be
 * divided into 4 regions (tree nodes) which might contain a particular number of elements described
 * by [x, y] coordinates. If a new element is added to a region which already contains a maximum
 * number of elements (so its capacity is exceeded), that region is further divided into another 4
@@ -262,7 +262,6 @@ public:
 
     /**
      * QuadTree Constructor.
-     * Parameters startX, startY and nodeCapacity are set to 0.
      *
      * @param width    Width of a field that might be represented in a QuadTree. Also specifies a
      *                 height because field must be rectangular. Width must be a power of 2.
@@ -288,7 +287,7 @@ public:
 
     /**
      * Insert a single element into Quadtree at given coordinates. Range check of coordinates is
-     * performed. They should be in range: [startX, startX + width] x [startY, startY + width]
+     * performed. They should be in range: [startX, startX + width) x [startY, startY + width)
      * to be inserted. Otherwise an element is not inserted.
      *
      * There are two overloaded versions of insert provided: one where given element is copied and
