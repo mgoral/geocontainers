@@ -8,18 +8,31 @@
 #include <utility>
 #include <iterator>
 #include <type_traits>
+#include <cmath>
 
 #include "Coordinates.hpp"
 
 namespace geo {
 
+/**
+ * Class that creates location codes from given coordinates.
+ *
+ * @param size Number of bits which represent a local code. It is also the maximum number of
+ * levels in a QuadTree.
+ */
 template <size_t size>
 struct LocationCode
 {
+    /**
+     * Constructor.
+     * locationCode = coordinate * 2^(ROOT_LEVEL) = coordinate * 2^(size - 1)
+     *
+     * @param coord Coordinate from which a location code is created.
+     */
     explicit LocationCode(const Coordinates& coord) :
-        x(coord.x() * (2 << (size - 1))),
-        y(coord.y() * (2 << (size - 1)))
-    { std::cout << (unsigned long)(coord.x() * (2 << (size - 1))) << " x " << (unsigned long)(coord.y() * (2 << (size - 1))) << "\n"; }
+        x(coord.x() * (2 << (size - 2))),
+        y(coord.y() * (2 << (size - 2)))
+    { std::cout << (unsigned long)(coord.x() * (2 << (size - 2))) << " x " << (unsigned long)(coord.y() * (2 << (size - 2))) << "\n"; }
 
     std::bitset<size> x;
     std::bitset<size> y;
@@ -288,7 +301,7 @@ public:
      */
     bool insert(double x, double y, const ElementType& val)
     {
-        if (x > startX + width || y > startY + width || x < startX || y < startY)
+        if (x >= startX + width || y >= startY + width || x < startX || y < startY)
             return false;
         return insert(StoredObject(LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), val));
     }
@@ -298,7 +311,7 @@ public:
      */
     bool insert(double x, double y, ElementType&& val)
     {
-        if (x > startX + width || y > startY + width || x < startX || y < startY)
+        if (x >= startX + width || y >= startY + width || x < startX || y < startY)
             return false;
         return insert(StoredObject(LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), std::move(val)));
     }
