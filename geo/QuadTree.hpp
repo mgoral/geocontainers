@@ -364,7 +364,7 @@ private:
     size_t startY;
     size_t nodeCapacity;
 
-    AffineCoordTr<0, 0, 1, 1> tr;
+    CoordTr<0, 0, 1, 1> tr;
     TreeNode root;
 };
 

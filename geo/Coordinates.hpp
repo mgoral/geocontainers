@@ -43,52 +43,51 @@ private:
 /**
  * Transforms coordinates from one carthesian system to another.
  *
- * Affine transformation is used. Current implemententation omits systems rotations. The
- * transformation is given by the following equations:
- *
- * X' = sx * X * cos(rotation)  - sy * Y * sin(rotation) + x0
- * Y' = sx * X * sin(rotation)  + sy * Y * cos(rotation) + y0
- * and rotation = 0.
- *
  * @param newStartX New systems' x-axis starting point.
  * @param newStartY New systems' y-axis starting point.
  * @param newWidthX New systems' x-axis width (newStartX + newWidthX defines maximum x-axis point).
  * @param newWidthY New systems' y-axis width (newStartY + newWidthY defines maximum y-axis point).
  */
 template <int newStartX, int newStartY, size_t newWidthX, size_t newWidthY>
-class AffineCoordTr
+class CoordTr
 {
 public:
-    AffineCoordTr(int startX, int startY, size_t widthX, size_t widthY)
+    CoordTr(int startX, int startY, size_t widthX, size_t widthY)
+        : startX(startX), startY(startY), widthX(widthX), widthY(widthY)
     {
-        scaleX = static_cast<double>(newWidthX) / static_cast<double>(widthX);
-        scaleY = static_cast<double>(newWidthY) / static_cast<double>(widthY);
-
         shiftX = newStartX - startX;
         shiftY = newStartY - startY;
     }
 
     Coordinates forward(const Coordinates& oldCoord) const
     {
+        double scaleX = (oldCoord.x() - startX) / static_cast<double>(widthX);
+        double scaleY = (oldCoord.y() - startY) / static_cast<double>(widthY);
+
         return Coordinates(
-            scaleX * (oldCoord.x() + shiftX),
-            scaleY * (oldCoord.y() + shiftY)
+            newStartX + (scaleX * newWidthX),
+            newStartY + (scaleY * newWidthY)
         );
     }
 
     Coordinates reverse(const Coordinates& newCoord) const
     {
+        double scaleX = (newCoord.x() - newStartX) / static_cast<double>(newWidthX);
+        double scaleY = (newCoord.y() - newStartY) / static_cast<double>(newWidthY);
+
         return Coordinates(
-            newCoord.x() / scaleX - shiftX,
-            newCoord.y() / scaleY - shiftY
+            startX + (scaleX * widthX),
+            startY + (scaleY * widthY)
         );
     }
 
 private:
-    double scaleX;
-    double scaleY;
     int shiftX;
     int shiftY;
+    int startX;
+    int startY;
+    int widthX;
+    int widthY;
 };
 
 } // namespace geo
