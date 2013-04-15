@@ -173,3 +173,13 @@ TEST_F(QuadTreeTests, InsertASingleObjectTwiceProperly)
     EXPECT_EQ(tree.size(), (size_t)2);
     ASSERT_EQ(foo.checker, 1); // check if original is still usable
 }
+
+TEST_F(QuadTreeTests, ClearLeavesNoElementsInATree)
+{
+    QuadTree<std::string> tree(4);
+    EXPECT_TRUE(tree.insert(1, 1, "fake"));
+
+    tree.clear();
+    EXPECT_EQ((size_t)0, tree.size());
+}
+

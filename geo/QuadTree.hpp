@@ -8,7 +8,7 @@
 #include <utility>
 #include <iterator>
 #include <type_traits>
-#include <cmath>
+#include <cstring>
 
 #include "Coordinates.hpp"
 
@@ -32,7 +32,7 @@ struct LocationCode
     explicit LocationCode(const Coordinates& coord) :
         x(coord.x() * (2 << (size - 2))),
         y(coord.y() * (2 << (size - 2)))
-    { std::cout << (unsigned long)(coord.x() * (2 << (size - 2))) << " x " << (unsigned long)(coord.y() * (2 << (size - 2))) << "\n"; }
+    { }
 
     std::bitset<size> x;
     std::bitset<size> y;
@@ -78,6 +78,39 @@ QuadNode(size_t level, QuadNode* nodeParent = nullptr)
     childNodes.fill(nullptr);
 }
 
+QuadNode(QuadNode&& that)
+{
+    childNodes.fill(nullptr);
+    nodeParent = nullptr;
+    swap(*this, that);
+}
+
+QuadNode(const QuadNode& that)
+    : nodeLevel(that.nodeLevel), storage(that.storage), nodeParent(that.nodeParent)
+{
+    for (int i = 0; i < 4; ++i)
+    {
+        if (that.childNodes[i] != nullptr)
+            childNodes[i] = new QuadNode(*that.childNodes[i]);
+        else
+            childNodes[i] = nullptr;
+    }
+}
+
+QuadNode& operator=(QuadNode rhs)
+{
+    swap(*this, rhs);
+    return *this;
+}
+
+friend void swap(QuadNode& first, QuadNode& second)
+{
+    std::swap(first.nodeLevel, second.nodeLevel);
+    std::swap(first.nodeParent, second.nodeParent);
+    first.storage.swap(second.storage);
+    first.childNodes.swap(second.childNodes);
+}
+
 ~QuadNode()
 {
     delete childNodes[0];
@@ -113,6 +146,22 @@ QuadNode* child(bool locX, bool locY)
         if (!locY)
             return child(4); // x = 1, y = 0
         return child(3); // x = 1, y = 1
+    }
+}
+
+bool childExists(bool locX, bool locY) const
+{
+    if (!locX)
+    {
+        if (!locY)
+            return (childNodes[0] != nullptr);
+        return (childNodes[1] != nullptr);
+    }
+    else
+    {
+        if (!locY)
+            return (childNodes[4] != nullptr);
+        return (childNodes[3] != nullptr);
     }
 }
 
@@ -281,9 +330,10 @@ public:
 
     ~QuadTree() {}
 
-    // QuadTree is non-copyable
-    QuadTree & operator=(const QuadTree&) = delete;
-    QuadTree(const QuadTree&) = delete;
+    void clear()
+    {
+        root = TreeNode(maxLevels - 1);
+    }
 
     /**
      * Insert a single element into Quadtree at given coordinates. Range check of coordinates is
