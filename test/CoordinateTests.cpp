@@ -138,7 +138,7 @@ TEST_F(AffineCoordTrTests, CorrectReverseTransformOfNonEdgePointWithShift)
 TEST_F(AffineCoordTrTests, CorrectTransformOfPointsNotStartingOn_0)
 {
     Coordinates orig(10, 10);
-    AffineCoordTr<1, 1, 1, 1> tr(5, 5, 10, 10);
+    AffineCoordTr<1, 1, 1, 1> tr(5, 5, 5, 5);
 
     Coordinates newCoord = tr.forward(orig);
 
@@ -149,7 +149,7 @@ TEST_F(AffineCoordTrTests, CorrectTransformOfPointsNotStartingOn_0)
 TEST_F(AffineCoordTrTests, CorrectReverseTransformOfPointsNotStartingOn_0)
 {
     Coordinates orig(10, 10);
-    AffineCoordTr<1, 1, 1, 1> tr(5, 5, 10, 10);
+    AffineCoordTr<1, 1, 1, 1> tr(5, 5, 5, 5);
 
     Coordinates newCoord = tr.reverse(tr.forward(orig));
 
@@ -160,7 +160,7 @@ TEST_F(AffineCoordTrTests, CorrectReverseTransformOfPointsNotStartingOn_0)
 TEST_F(AffineCoordTrTests, CorrectTransformOfPointsNotStartingOn_0_ToNegativeSystem)
 {
     Coordinates orig(8, 8);
-    AffineCoordTr<-2, -2, 1, 1> tr(3, 3, 8, 8);
+    AffineCoordTr<-2, -2, 1, 1> tr(3, 3, 5, 5);
 
     Coordinates newCoord = tr.forward(orig);
 
@@ -171,7 +171,7 @@ TEST_F(AffineCoordTrTests, CorrectTransformOfPointsNotStartingOn_0_ToNegativeSys
 TEST_F(AffineCoordTrTests, CorrectReverseTransformOfPointsNotStartingOn_0_ToNegativeSystem)
 {
     Coordinates orig(8, 8);
-    AffineCoordTr<-2, -2, 1, 1> tr(3, 3, 8, 8);
+    AffineCoordTr<-2, -2, 1, 1> tr(3, 3, 5, 5);
 
     Coordinates newCoord = tr.reverse(tr.forward(orig));
 

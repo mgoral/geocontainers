@@ -63,6 +63,7 @@ public:
     {
         scaleX = static_cast<double>(newWidthX) / static_cast<double>(widthX);
         scaleY = static_cast<double>(newWidthY) / static_cast<double>(widthY);
+
         shiftX = newStartX - startX;
         shiftY = newStartY - startY;
     }
@@ -70,16 +71,16 @@ public:
     Coordinates forward(const Coordinates& oldCoord) const
     {
         return Coordinates(
-            scaleX * oldCoord.x() + shiftX,
-            scaleY * oldCoord.y() + shiftY
+            scaleX * (oldCoord.x() + shiftX),
+            scaleY * (oldCoord.y() + shiftY)
         );
     }
 
     Coordinates reverse(const Coordinates& newCoord) const
     {
         return Coordinates(
-            (newCoord.x() - shiftX) / scaleX,
-            (newCoord.y() - shiftY) / scaleY
+            newCoord.x() / scaleX - shiftX,
+            newCoord.y() / scaleY - shiftY
         );
     }
 
