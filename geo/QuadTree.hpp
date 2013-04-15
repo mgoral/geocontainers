@@ -16,10 +16,10 @@ namespace geo {
 template <size_t size>
 struct LocationCode
 {
-    LocationCode(const Coordinates& coord) :
-        x((coord.x() + 0.5) * (2 << size)),
-        y((coord.y() + 0.5) * (2 << size))
-    { }
+    explicit LocationCode(const Coordinates& coord) :
+        x(coord.x() * (2 << (size - 1))),
+        y(coord.y() * (2 << (size - 1)))
+    { std::cout << (unsigned long)(coord.x() * (2 << (size - 1))) << " x " << (unsigned long)(coord.y() * (2 << (size - 1))) << "\n"; }
 
     std::bitset<size> x;
     std::bitset<size> y;
@@ -290,7 +290,7 @@ public:
     {
         if (x > startX + width || y > startY + width || x < startX || y < startY)
             return false;
-        return insert(StoredObject(tr.forward(Coordinates(x, y)), val));
+        return insert(StoredObject(LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), val));
     }
 
     /**
@@ -300,7 +300,7 @@ public:
     {
         if (x > startX + width || y > startY + width || x < startX || y < startY)
             return false;
-        return insert(StoredObject(tr.forward(Coordinates(x, y)), std::move(val)));
+        return insert(StoredObject(LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), std::move(val)));
     }
 
     /**
