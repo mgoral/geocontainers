@@ -350,9 +350,12 @@ public:
      */
     bool insert(double x, double y, const ElementType& val)
     {
-        if (x >= startX + width || y >= startY + width || x < startX || y < startY)
-            return false;
-        return insert(StoredObject(LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), val));
+        if (coordinatesAreOk(x, y))
+        {
+            return insert(StoredObject(
+                LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), val));
+        }
+        return false;
     }
 
     /**
@@ -360,9 +363,12 @@ public:
      */
     bool insert(double x, double y, ElementType&& val)
     {
-        if (x >= startX + width || y >= startY + width || x < startX || y < startY)
-            return false;
-        return insert(StoredObject(LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), std::move(val)));
+        if (coordinatesAreOk(x, y))
+        {
+            return insert(StoredObject(
+                LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), std::move(val)));
+        }
+        return false;
     }
 
     /**
@@ -384,6 +390,13 @@ private:
             throw std::invalid_argument("size is less than 1");
         if (((width - 1) & width) != 0)
             throw std::invalid_argument("size is not power of 2");
+    }
+
+    bool coordinatesAreOk(double x, double y)
+    {
+        if (x >= startX + width || y >= startY + width || x < startX || y < startY)
+            return false;
+        return true;
     }
 
     TreeNode* getNode(const LocationCode<maxLevels>& code)
