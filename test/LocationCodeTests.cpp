@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "QuadTree.hpp"
+#include "internal/LocationCode.hpp"
 
 using namespace testing;
 using namespace geo;

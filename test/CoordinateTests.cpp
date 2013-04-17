@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "Coordinates.hpp"
+#include "internal/Coordinates.hpp"
 
 #include <iostream>
 
