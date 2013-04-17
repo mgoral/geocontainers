@@ -268,19 +268,21 @@ private:
 
 
 /**
-* QuadTree<ElementType, size_t maxLevels=10> main class to construct a Quad Tree. Graphically it
-* represents a two-dimension field with elements from the range of [x, y). That field might be
-* divided into 4 regions (tree nodes) which might contain a particular number of elements described
-* by [x, y] coordinates. If a new element is added to a region which already contains a maximum
-* number of elements (so its capacity is exceeded), that region is further divided into another 4
-* subregions. Each element stored in a parent region is then added to appropriate subregion.
+* Main class to construct a Quad Tree.
+*
+* Graphically it represents a two-dimension field with elements from the range of [x, y). That field
+* might be divided into 4 regions (tree nodes) which might contain a particular number of elements
+* described by [x, y] coordinates. If a new element is added to a region which already contains a
+* maximum number of elements (so its capacity is exceeded), that region is further divided into
+* another 4 subregions. Each element stored in a parent region is then added to appropriate
+* subregion.
 *
 * This way the whole field is divided into smaller regions, each of them containing only adjacent
 * elements. Thanks to this e.g. efficent collision detection algorithms might be performed.
 *
 * @param ElementType Type of elements that will be stored inside QuadTree.
 * @param maxLevels   Maximum number of tree levels (used for practical reasons). Must be higher than
-*                    0 and smaller than 32.
+*                    0 and smaller than 32. Default is 10.
 */
 template <typename ElementType, size_t maxLevels = 10>
 class QuadTree
@@ -294,7 +296,7 @@ public:
      * QuadTree Constructor.
      * Parameters startX, startY and nodeCapacity are set to 0.
      *
-     *  @see QuadTree(size_t width, int startX, int startY)
+     *  @see QuadTree(size_t width, int startX, int startY, capacity)
      */
     explicit QuadTree(size_t width)
         : width(width), startX(0), startY(0), nodeCapacity(0),
@@ -307,7 +309,7 @@ public:
      * QuadTree Constructor
      * Parameters startX and startY are set to 0.
      *
-     *  @see QuadTree(size_t width, int startX, int startY)
+     *  @see QuadTree(size_t width, int startX, int startY, capacity)
      */
     QuadTree(size_t width, size_t capacity)
         : width(width), startX(0), startY(0), nodeCapacity(capacity),
@@ -320,7 +322,7 @@ public:
      * QuadTree Constructor
      * Parameter capacity is set to 0.
      *
-     *  @see QuadTree(size_t width, int startX, int startY)
+     *  @see QuadTree(size_t width, int startX, int startY, capacity)
      */
     QuadTree(size_t width, int startX, int startY)
         : width(width), startX(startX), startY(startY), nodeCapacity(0),
@@ -350,6 +352,9 @@ public:
 
     ~QuadTree() {}
 
+    /**
+     * Clear the tree, removing and destroying all elements stored inside the QuadTree container.
+     */
     void clear()
     {
         root = TreeNode(maxLevels - 1);
