@@ -34,6 +34,11 @@ struct LocationCode
         y(coord.y() * (2 << (size - 2)))
     { }
 
+    bool operator==(const LocationCode& rhs) const
+    {
+        return (x == rhs.x && y == rhs.y);
+    }
+
     std::bitset<size> x;
     std::bitset<size> y;
 };
@@ -46,7 +51,7 @@ struct ObjectWithLocationCode {
     ObjectWithLocationCode(const LocationCode<locCodeMaxSize>& location, const ObjectType& object)
         : location(location), object(object) { }
 
-    ObjectWithLocationCode(LocationCode<locCodeMaxSize>&& coord, ObjectType&& object)
+    ObjectWithLocationCode(LocationCode<locCodeMaxSize>&& location, ObjectType&& object)
         : location(std::move(location)), object(object) { }
 };
 
@@ -67,183 +72,198 @@ private:
 template <typename ObjectType, size_t totalLevels>
 class QuadNode {
 private:
-typedef ObjectWithLocationCode<ObjectType, totalLevels> StoredObject;
-typedef std::vector<StoredObject> Objects;
-typedef std::array<QuadNode<ObjectType, totalLevels>*, 4> Nodes;
+    typedef ObjectWithLocationCode<ObjectType, totalLevels> StoredObject;
+    typedef std::vector<StoredObject> Objects;
+    typedef std::array<QuadNode<ObjectType, totalLevels>*, 4> Nodes;
 
 public:
-QuadNode(size_t level, QuadNode* nodeParent = nullptr)
-    : nodeLevel(level), nodeParent(nodeParent)
-{
-    childNodes.fill(nullptr);
-}
-
-QuadNode(QuadNode&& that)
-{
-    childNodes.fill(nullptr);
-    nodeParent = nullptr;
-    swap(*this, that);
-}
-
-QuadNode(const QuadNode& that)
-    : nodeLevel(that.nodeLevel), storage(that.storage), nodeParent(that.nodeParent)
-{
-    for (int i = 0; i < 4; ++i)
+    QuadNode(size_t level, QuadNode* nodeParent = nullptr)
+        : nodeLevel(level), nodeParent(nodeParent)
     {
-        if (that.childNodes[i] != nullptr)
-            childNodes[i] = new QuadNode(*that.childNodes[i]);
-        else
-            childNodes[i] = nullptr;
+        childNodes.fill(nullptr);
     }
-}
 
-QuadNode& operator=(QuadNode rhs)
-{
-    swap(*this, rhs);
-    return *this;
-}
-
-friend void swap(QuadNode& first, QuadNode& second)
-{
-    std::swap(first.nodeLevel, second.nodeLevel);
-    std::swap(first.nodeParent, second.nodeParent);
-    first.storage.swap(second.storage);
-    first.childNodes.swap(second.childNodes);
-}
-
-~QuadNode()
-{
-    delete childNodes[0];
-    childNodes[0] = nullptr;
-    delete childNodes[1];
-    childNodes[1] = nullptr;
-    delete childNodes[2];
-    childNodes[2] = nullptr;
-    delete childNodes[3];
-    childNodes[3] = nullptr;
-}
-
-QuadNode* child(const LocationCode<totalLevels>& loc)
-{
-    bool childLocX = loc.x[totalLevels - nodeLevel - 1];
-    bool childLocY = loc.y[totalLevels - nodeLevel - 1];
-    return child(childLocX, childLocY);
-}
-
-QuadNode* child(bool locX, bool locY)
-{
-    // children are located in an 'U-shape':
-    // | 0 3 |
-    // | 1 2 |
-    if (!locX)
+    QuadNode(QuadNode&& that)
     {
-        if (!locY)
-            return child(0); // x = 0, y = 0
-        return child(1); // x = 0, y = 1
+        childNodes.fill(nullptr);
+        nodeParent = nullptr;
+        swap(*this, that);
     }
-    else
-    {
-        if (!locY)
-            return child(4); // x = 1, y = 0
-        return child(3); // x = 1, y = 1
-    }
-}
 
-bool childExists(bool locX, bool locY) const
-{
-    if (!locX)
-    {
-        if (!locY)
-            return (childNodes[0] != nullptr);
-        return (childNodes[1] != nullptr);
-    }
-    else
-    {
-        if (!locY)
-            return (childNodes[4] != nullptr);
-        return (childNodes[3] != nullptr);
-    }
-}
-
-void clear()
-{
-    storage.clear();
-}
-
-/**
-    * Gives a number of objects stored in a current node.
-    */
-size_t count() const
-{
-    return storage.size();
-}
-
-bool hasChildren() const
-{
-    if (childNodes[0] != nullptr || childNodes[1] != nullptr ||
-        childNodes[2] != nullptr || childNodes[3] != nullptr)
-        return true;
-    return false;
-}
-
-void insert(StoredObject&& object)
-{
-    storage.push_back(std::move(object));
-}
-
-size_t level() const
-{
-    return nodeLevel;
-}
-
-const QuadNode* parent() const
-{
-    return parent;
-}
-
-/**
-    * Returns a number of objects stored in a current node and all subnodes.
-    */
-size_t totalCount() const
-{
-    size_t tc = storage.size();
-    if (hasChildren())
+    QuadNode(const QuadNode& that)
+        : nodeLevel(that.nodeLevel), storage(that.storage), nodeParent(that.nodeParent)
     {
         for (int i = 0; i < 4; ++i)
         {
-            if (childNodes[i] != nullptr)
-                tc += childNodes[i]->totalCount();
+            if (that.childNodes[i] != nullptr)
+                childNodes[i] = new QuadNode(*that.childNodes[i]);
+            else
+                childNodes[i] = nullptr;
         }
     }
-    return tc;
-}
 
-/*
-ObjectType& operator[](size_t element)
-{
-    return storage[element].object;
-}
-*/
+    QuadNode& operator=(QuadNode rhs)
+    {
+        swap(*this, rhs);
+        return *this;
+    }
 
-StoredObject& operator[](size_t element)
-{
-    return storage[element];
-}
+    friend void swap(QuadNode& first, QuadNode& second)
+    {
+        std::swap(first.nodeLevel, second.nodeLevel);
+        std::swap(first.nodeParent, second.nodeParent);
+        first.storage.swap(second.storage);
+        first.childNodes.swap(second.childNodes);
+    }
+
+    ~QuadNode()
+    {
+        delete childNodes[0];
+        childNodes[0] = nullptr;
+        delete childNodes[1];
+        childNodes[1] = nullptr;
+        delete childNodes[2];
+        childNodes[2] = nullptr;
+        delete childNodes[3];
+        childNodes[3] = nullptr;
+    }
+
+    QuadNode* child(const LocationCode<totalLevels>& loc)
+    {
+        bool childLocX = loc.x[totalLevels - nodeLevel - 1];
+        bool childLocY = loc.y[totalLevels - nodeLevel - 1];
+        return child(childLocX, childLocY);
+    }
+
+    QuadNode* child(bool locX, bool locY)
+    {
+        // children are located in an 'U-shape':
+        // | 0 3 |
+        // | 1 2 |
+        if (!locX)
+        {
+            if (!locY)
+                return child(0); // x = 0, y = 0
+            return child(1); // x = 0, y = 1
+        }
+        else
+        {
+            if (!locY)
+                return child(4); // x = 1, y = 0
+            return child(3); // x = 1, y = 1
+        }
+    }
+
+    bool childExists(bool locX, bool locY) const
+    {
+        if (!locX)
+        {
+            if (!locY)
+                return (childNodes[0] != nullptr);
+            return (childNodes[1] != nullptr);
+        }
+        else
+        {
+            if (!locY)
+                return (childNodes[4] != nullptr);
+            return (childNodes[3] != nullptr);
+        }
+    }
+
+    void clear()
+    {
+        storage.clear();
+    }
+
+    /**
+     * Gives a number of objects stored in a current node.
+     */
+    size_t count() const
+    {
+        return storage.size();
+    }
+
+    /**
+     * Removes all elements that match a given LocationCode.
+     */
+    void erase(const LocationCode<totalLevels>& loc)
+    {
+        typename Objects::iterator it;
+        for (it = storage.begin(); it != storage.end();)
+        {
+            if (loc == (it->location))
+                it = storage.erase(it);
+            else
+                ++it;
+        }
+    }
+
+    bool hasChildren() const
+    {
+        if (childNodes[0] != nullptr || childNodes[1] != nullptr ||
+            childNodes[2] != nullptr || childNodes[3] != nullptr)
+            return true;
+        return false;
+    }
+
+    void insert(StoredObject&& object)
+    {
+        storage.push_back(std::move(object));
+    }
+
+    size_t level() const
+    {
+        return nodeLevel;
+    }
+
+    const QuadNode* parent() const
+    {
+        return parent;
+    }
+
+    /**
+     * Returns a number of objects stored in a current node and all subnodes.
+     */
+    size_t totalCount() const
+    {
+        size_t tc = storage.size();
+        if (hasChildren())
+        {
+            for (int i = 0; i < 4; ++i)
+            {
+                if (childNodes[i] != nullptr)
+                    tc += childNodes[i]->totalCount();
+            }
+        }
+        return tc;
+    }
+
+    /*
+    ObjectType& operator[](size_t element)
+    {
+        return storage[element].object;
+    }
+    */
+
+    StoredObject& operator[](size_t element)
+    {
+        return storage[element];
+    }
 
 private:
-QuadNode* child(uint32_t childNo)
-{
-    if (childNodes[childNo] == nullptr)
-        childNodes[childNo] = new QuadNode(nodeLevel - 1, this);
-    return childNodes[childNo];
-}
+    QuadNode* child(uint32_t childNo)
+    {
+        if (childNodes[childNo] == nullptr)
+            childNodes[childNo] = new QuadNode(nodeLevel - 1, this);
+        return childNodes[childNo];
+    }
 
 private:
-size_t nodeLevel;
-Objects storage;
+    size_t nodeLevel;
+    Objects storage;
 
-const QuadNode* nodeParent;
-Nodes childNodes;
+    const QuadNode* nodeParent;
+    Nodes childNodes;
 };
 
 
@@ -333,6 +353,24 @@ public:
     void clear()
     {
         root = TreeNode(maxLevels - 1);
+    }
+
+    /**
+     * Removes from the QuadTree container all elements that match given coordinates. They are then
+     * destroyed.
+     *
+     * @param x X-axis coordinate of the element to be removed.
+     * @param y Y-axis coordinate of the element to be removed.
+     */
+    void erase(double x, double y)
+    {
+        // TODO: relocate elements to node->parent() if node and its siblings count is lower or equal than capacity.
+        if (coordinatesAreOk(x, y))
+        {
+            LocationCode<maxLevels> code(tr.forward(Coordinates(x, y)));
+            TreeNode* node = getNode(code);
+            node->erase(code);
+        }
     }
 
     /**

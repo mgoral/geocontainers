@@ -180,6 +180,99 @@ TEST_F(QuadTreeTests, ClearLeavesNoElementsInATree)
     EXPECT_TRUE(tree.insert(1, 1, "fake"));
 
     tree.clear();
-    EXPECT_EQ((size_t)0, tree.size());
+    ASSERT_EQ((size_t)0, tree.size());
+}
+
+TEST_F(QuadTreeTests, EraseASingleElement)
+{
+    QuadTree<std::string> tree(4);
+    EXPECT_TRUE(tree.insert(1, 1, "fake"));
+
+    tree.erase(1, 1);
+    ASSERT_EQ((size_t)0, tree.size());
+}
+
+TEST_F(QuadTreeTests, EraseASingleElementWithFloatCoordinates)
+{
+    QuadTree<std::string> tree(4);
+    EXPECT_TRUE(tree.insert(1.00001, 1.00002, "fake"));
+
+    tree.erase(1.00001, 1.00002);
+    ASSERT_EQ((size_t)0, tree.size());
+}
+
+TEST_F(QuadTreeTests, EraseDoesntRemoveNotMatchingElementWithFloatCoordinates)
+{
+    QuadTree<std::string> tree(4);
+    EXPECT_TRUE(tree.insert(1.00001, 1.00001, "fake"));
+
+    tree.erase(1.00001, 1.00002);
+    ASSERT_EQ((size_t)0, tree.size());
+}
+
+TEST_F(QuadTreeTests, EraseASingleElementWhenThereIsMoreThan1)
+{
+    QuadTree<std::string> tree(4);
+    EXPECT_TRUE(tree.insert(0, 0, "fake"));
+    EXPECT_TRUE(tree.insert(1, 2, "fake"));
+
+    // TODO: telling the truth, it's test of size() method. Better use some kind of getters when
+    // they're implemented.
+    tree.erase(1, 2);
+    ASSERT_EQ((size_t)1, tree.size());
+}
+
+TEST_F(QuadTreeTests, EraseDoesntThrowOnIncorrectRequest)
+{
+    QuadTree<std::string> tree(4);
+
+    tree.erase(1, 1);
+    ASSERT_NO_THROW(tree.size());
+}
+
+TEST_F(QuadTreeTests, EraseRemovesNothingOnIncorrectRequest)
+{
+    QuadTree<std::string> tree(4);
+    EXPECT_TRUE(tree.insert(1, 2, "fake"));
+
+    // TODO: telling the truth, it's test of size() method. Better use some kind of getters when
+    // they're implemented.
+    tree.erase(1, 1);
+    ASSERT_EQ((size_t)1, tree.size());
+}
+
+TEST_F(QuadTreeTests, EraseDoesntThrowWhenCoordinatesAreOutOfBoundaries)
+{
+    QuadTree<std::string> tree(4);
+    //
+    // TODO: telling the truth, it's test of size() method. Better use some kind of getters when
+    // they're implemented.
+    ASSERT_NO_THROW(tree.erase(11, 9));
+}
+
+TEST_F(QuadTreeTests, EraseRemovesNothingWhenCoordinatesAreOutOfBoundaries)
+{
+    QuadTree<std::string> tree(4);
+    EXPECT_TRUE(tree.insert(3, 3, "fake"));
+
+    // TODO: telling the truth, it's test of size() method. Better use some kind of getters when
+    // they're implemented.
+    tree.erase(10, 8);
+    ASSERT_EQ((size_t)1, tree.size());
+}
+
+TEST_F(QuadTreeTests, EraseOnlyRemovesMatchingElements)
+{
+    QuadTree<std::string> tree(4);
+    EXPECT_TRUE(tree.insert(1, 1, "fake"));
+    EXPECT_TRUE(tree.insert(2, 1, "fake"));
+    EXPECT_TRUE(tree.insert(1, 1, "fake"));
+    EXPECT_TRUE(tree.insert(1, 3, "fake"));
+    EXPECT_TRUE(tree.insert(1, 1, "fake"));
+
+    // TODO: telling the truth, it's test of size() method. Better use some kind of getters when
+    // they're implemented.
+    tree.erase(1, 1);
+    ASSERT_EQ((size_t)2, tree.size());
 }
 
