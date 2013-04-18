@@ -15,8 +15,9 @@ namespace geo {
  * levels in a QuadTree.
  */
 template <size_t size>
-struct LocationCode
+class LocationCode
 {
+public:
     /**
      * Constructor.
      * locationCode = coordinate * 2^(ROOT_LEVEL) = coordinate * 2^(size - 1)
@@ -24,17 +25,36 @@ struct LocationCode
      * @param coord Coordinate from which a location code is created.
      */
     explicit LocationCode(const Coordinates& coord) :
-        x(coord.x() * (2 << (size - 2))),
-        y(coord.y() * (2 << (size - 2)))
+        x_(coord.x() * (2 << (size - 2))),
+        y_(coord.y() * (2 << (size - 2)))
     { }
 
     bool operator==(const LocationCode& rhs) const
     {
-        return (x == rhs.x && y == rhs.y);
+        return (x_ == rhs.x_ && y_ == rhs.y_);
     }
 
-    std::bitset<size> x;
-    std::bitset<size> y;
+    LocationCode& operator++() const
+    {
+
+    }
+
+    std::bitset<size> x() const
+    {
+        return std::bitset<size>(x_);
+    }
+
+    std::bitset<size> y() const
+    {
+        return std::bitset<size>(x_);
+    }
+
+private:
+    unsigned x_;
+    unsigned y_;
+
+private:
+    std::pair<bool, bool> incrementOrder;
 };
 
 template <typename ObjectType, size_t locCodeMaxSize>
