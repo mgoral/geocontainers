@@ -70,8 +70,8 @@ public:
 
     QuadNode* child(const LocationCode<totalLevels>& loc)
     {
-        bool childLocX = loc.x()[totalLevels - nodeLevel - 1];
-        bool childLocY = loc.y()[totalLevels - nodeLevel - 1];
+        bool childLocX = loc.x[totalLevels - nodeLevel - 1];
+        bool childLocY = loc.y[totalLevels - nodeLevel - 1];
         return child(childLocX, childLocY);
     }
 
