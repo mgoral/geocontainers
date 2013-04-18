@@ -219,17 +219,21 @@ private:
     bool insert(StoredObject&& toStore)
     {
         TreeNode* node = getNode(toStore.location);
-        if (0 < node->level())
+        if (node->level() > 0)
         {
-            if (node->count() == nodeCapacity)
+            // We store one element at time so there will be a moment before node overflow when its
+            // count will be equal capacity. Then we'll relocate all its elements to the new child
+            // nodes. At worst scenario, all elements will be relocated to the same node, so its
+            // count() will be again equal to capacity. The loop ends when at least one element is
+            // relocated to the another child node.
+            while (node->count() == nodeCapacity && node->level() > 0)
             {
                 for (size_t i = 0; i < node->count(); ++i)
                 {
                     StoredObject moved = (*node)[i];
                     node->child(moved.location)->insert(std::move(moved));
                 }
-                node->child(toStore.location)->insert(std::move(toStore));
-                return true;
+                node = node->child(toStore.location);
             }
         }
         node->insert(std::move(toStore));
