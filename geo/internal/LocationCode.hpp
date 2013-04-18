@@ -18,6 +18,11 @@ template <size_t size>
 struct LocationCode
 {
     /**
+     * Default Constructor. Location codes are set by default to 0.
+     */
+    LocationCode()  : x(0), y(0) {}
+
+    /**
      * Constructor.
      * locationCode = coordinate * 2^(ROOT_LEVEL) = coordinate * 2^(size - 1)
      *

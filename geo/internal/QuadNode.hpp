@@ -11,10 +11,26 @@ namespace geo {
 
 template <typename ObjectType, size_t totalLevels>
 class QuadNode {
+public:
+    typedef LocationCode<totalLevels> NodeCode;
+
 private:
     typedef ObjectWithLocationCode<ObjectType, totalLevels> StoredObject;
     typedef std::vector<StoredObject> Objects;
     typedef std::array<QuadNode<ObjectType, totalLevels>*, 4> Nodes;
+
+private:
+    /**
+     * Constructor with LocationCode set. User is not allowed to explicitly set node code. It's
+     * calculated by node's parent instead.
+     */
+    QuadNode(size_t level, NodeCode&& nodeCode, QuadNode* nodeParent)
+        : nodeLevel(level), nodeParent(nodeParent), nodeCode(nodeCode)
+    {
+        std::cout << "QuadNode with location code. level: " << nodeLevel << ", x: " << nodeCode.x.to_string() <<
+            ", y: " << nodeCode.y.to_string() << "\n";
+        childNodes.fill(nullptr);
+    }
 
 public:
     QuadNode(size_t level, QuadNode* nodeParent = nullptr)
@@ -31,7 +47,8 @@ public:
     }
 
     QuadNode(const QuadNode& that)
-        : nodeLevel(that.nodeLevel), storage(that.storage), nodeParent(that.nodeParent)
+        : nodeLevel(that.nodeLevel), storage(that.storage), nodeParent(that.nodeParent),
+        nodeCode(that.nodeCode)
     {
         for (int i = 0; i < 4; ++i)
         {
@@ -54,6 +71,7 @@ public:
         std::swap(first.nodeParent, second.nodeParent);
         first.storage.swap(second.storage);
         first.childNodes.swap(second.childNodes);
+        std::swap(first.nodeCode, second.nodeCode);
     }
 
     ~QuadNode()
@@ -68,8 +86,10 @@ public:
         childNodes[3] = nullptr;
     }
 
-    QuadNode* child(const LocationCode<totalLevels>& loc)
+    QuadNode* child(const NodeCode& loc)
     {
+        // TODO: check if a given loc is valid from a current QuadNode POV, i.e. first
+        // "currentlevelNo - 1" bits of (loc ^ nodeCode) are equal to 0.
         bool childLocX = loc.x[totalLevels - nodeLevel - 1];
         bool childLocY = loc.y[totalLevels - nodeLevel - 1];
         return child(childLocX, childLocY);
@@ -77,7 +97,15 @@ public:
 
     QuadNode* child(bool locX, bool locY)
     {
-        return child(locToInt(locX, locY));
+        uint32_t childNo = locToInt(locX, locY);
+        if (childNodes[childNo] == nullptr)
+        {
+            NodeCode newNodeCode(nodeCode);
+            newNodeCode.x[totalLevels - nodeLevel - 1] = locX;
+            newNodeCode.y[totalLevels - nodeLevel - 1] = locY;
+            childNodes[childNo] = new QuadNode(nodeLevel - 1, std::move(newNodeCode), this);
+        }
+        return childNodes[childNo];
     }
 
     bool childExists(bool locX, bool locY) const
@@ -101,7 +129,7 @@ public:
     /**
      * Removes all elements that match a given LocationCode.
      */
-    void erase(const LocationCode<totalLevels>& loc)
+    void erase(const NodeCode& loc)
     {
         typename Objects::iterator it;
         for (it = storage.begin(); it != storage.end();)
@@ -166,9 +194,7 @@ public:
 private:
     QuadNode* child(uint32_t childNo)
     {
-        if (childNodes[childNo] == nullptr)
-            childNodes[childNo] = new QuadNode(nodeLevel - 1, this);
-        return childNodes[childNo];
+
     }
 
 private:
@@ -177,7 +203,48 @@ private:
 
     const QuadNode* nodeParent;
     Nodes childNodes;
+    NodeCode nodeCode;
 };
+
+/*
+QuadNode* nextNode(QuadNode* node)
+{
+    if (node->hasChildren())
+    {
+        if (node->childExists(0, 0)) return child(QuadNode::locationToInt(0, 0));
+        else if (node->childExists(0, 1)) return child(QuadNode::locationToInt(0, 1));
+        else if (node->childExists(1, 0)) return child(QuadNode::locationToInt(1, 0));
+        else return child(QuadNode::locationToInt(1, 1));
+    }
+    else
+    {
+        // No children and node is a root node.
+        if (nullptr == node->parent())
+            return nullptr;
+
+        QuadNode* nodeParent;
+        while (1)
+        {
+            nodeParent = node->parent();
+            bool currNodeFound = false;
+            for (uint32_t i = 0; i < 4; ++i)
+            {
+                bool x = (i & 0x10) >> 1;
+                bool y = i & 0x01;
+                if (nodeParent->childExists(x, y))
+                {
+                    if (nodeParent->child(x, y) == node)
+                        currNodeFound = true;
+                    else if (currNodeFound)
+                        return nodeParent->child(x, y)
+                }
+            }
+        }
+
+        QuadNode* retNode = node->parent()
+    }
+}
+*/
 
 } // namespace geo
 
