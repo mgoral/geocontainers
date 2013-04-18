@@ -77,37 +77,12 @@ public:
 
     QuadNode* child(bool locX, bool locY)
     {
-        // children are located in an 'U-shape':
-        // | 0 3 |
-        // | 1 2 |
-        if (!locX)
-        {
-            if (!locY)
-                return child(0); // x = 0, y = 0
-            return child(1); // x = 0, y = 1
-        }
-        else
-        {
-            if (!locY)
-                return child(4); // x = 1, y = 0
-            return child(3); // x = 1, y = 1
-        }
+        return child(locationToInt(locX, locY));
     }
 
     bool childExists(bool locX, bool locY) const
     {
-        if (!locX)
-        {
-            if (!locY)
-                return (childNodes[0] != nullptr);
-            return (childNodes[1] != nullptr);
-        }
-        else
-        {
-            if (!locY)
-                return (childNodes[4] != nullptr);
-            return (childNodes[3] != nullptr);
-        }
+        return (childNodes[locationToInt(locX, locY)] != nullptr);
     }
 
     void clear()
@@ -156,6 +131,11 @@ public:
         return nodeLevel;
     }
 
+    static uint32_t locationToInt(bool locX, bool locY)
+    {
+        return ((locX << 1) + locY);
+    }
+
     const QuadNode* parent() const
     {
         return parent;
@@ -177,13 +157,6 @@ public:
         }
         return tc;
     }
-
-    /*
-    ObjectType& operator[](size_t element)
-    {
-        return storage[element].object;
-    }
-    */
 
     StoredObject& operator[](size_t element)
     {
