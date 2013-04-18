@@ -77,12 +77,12 @@ public:
 
     QuadNode* child(bool locX, bool locY)
     {
-        return child(locationToInt(locX, locY));
+        return child(locToInt(locX, locY));
     }
 
     bool childExists(bool locX, bool locY) const
     {
-        return (childNodes[locationToInt(locX, locY)] != nullptr);
+        return (childNodes[locToInt(locX, locY)] != nullptr);
     }
 
     void clear()
@@ -131,7 +131,7 @@ public:
         return nodeLevel;
     }
 
-    static uint32_t locationToInt(bool locX, bool locY)
+    static uint32_t locToInt(bool locX, bool locY)
     {
         return ((locX << 1) + locY);
     }
@@ -178,7 +178,6 @@ private:
     const QuadNode* nodeParent;
     Nodes childNodes;
 };
-
 
 } // namespace geo
 
