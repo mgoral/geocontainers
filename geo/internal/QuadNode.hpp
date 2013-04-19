@@ -260,6 +260,35 @@ QuadNode<T, lev>* nextNode(QuadNode<T, lev>* node)
     }
 }
 
+template <typename T, size_t lev>
+QuadNode<T, lev>* previousNode(QuadNode<T, lev>* node)
+{
+    if (node == nullptr || node->parent() == nullptr)
+        return nullptr;
+
+    bool x = node->locationCode().x[node->level()];
+    bool y = node->locationCode().y[node->level()];
+    node = node->parent();
+    for (int i = QuadNode<T, lev>::locToInt(x, y) - 1; i >= 0; --i)
+    {
+        bool cx = (i & 2) >> 1;
+        bool cy = i & 1;
+        if (node->childExists(cx, cy))
+        {
+            node = node->child(cx, cy);
+            while (node->hasChildren())
+            {
+                if (node->childExists(1, 1)) node = node->child(1, 1);
+                else if (node->childExists(1, 0)) node = node->child(1, 0);
+                else if (node->childExists(0, 1)) node = node->child(0, 1);
+                else node = node->child(0, 0);
+            }
+            return node;
+        }
+    }
+    return node;
+}
+
 } // namespace geo
 
 #endif

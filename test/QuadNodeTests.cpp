@@ -159,3 +159,51 @@ TEST_F(QuadNodeTests, NextNodeOfNullPtrReturnsNull)
     QuadNode<int, 10>* child = nullptr;
     ASSERT_EQ(nullptr, nextNode(child));
 }
+
+TEST_F(QuadNodeTests, PreviousNodeReturnsParentWhenNodeIsTheOnlyChild)
+{
+    createTree();
+    QuadNode<int, 10>* child = root.child(1,1)->child(1,0);
+    ASSERT_EQ(root.child(1,1), previousNode(child));
+}
+
+TEST_F(QuadNodeTests, PreviousNodeReturnsParentWhenNodeIsTheFirstChild)
+{
+    createTree();
+    QuadNode<int, 10>* child = root.child(0,0)->child(0,0);
+    ASSERT_EQ(root.child(0,0), previousNode(child));
+}
+
+TEST_F(QuadNodeTests, PreviousNodeReturnsCorrectSibling)
+{
+    createTree();
+    QuadNode<int, 10>* child = root.child(0,0)->child(1,1);
+    ASSERT_EQ(root.child(0,0)->child(1,0), previousNode(child));
+}
+
+TEST_F(QuadNodeTests, PreviousNodeReturnsCorrectFirstSibling)
+{
+    createTree();
+    QuadNode<int, 10>* child = root.child(0,0)->child(0,1);
+    ASSERT_EQ(root.child(0,0)->child(0,0), previousNode(child));
+}
+
+TEST_F(QuadNodeTests, PreviousNodeCorrectlySkipsNulls)
+{
+    createTree();
+    QuadNode<int, 10>* child = root.child(1,1);
+    ASSERT_EQ(root.child(0,1)->child(1,0), previousNode(child));
+}
+
+TEST_F(QuadNodeTests, PreviousNodeOfTheRootNodeReturnsNull)
+{
+    createTree();
+    QuadNode<int, 10>* child = &root;
+    ASSERT_EQ(nullptr, previousNode(child));
+}
+
+TEST_F(QuadNodeTests, PreviousNodeOfNullPtrReturnsNull)
+{
+    QuadNode<int, 10>* child = nullptr;
+    ASSERT_EQ(nullptr, previousNode(child));
+}
