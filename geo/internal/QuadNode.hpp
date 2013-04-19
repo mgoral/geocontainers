@@ -27,8 +27,6 @@ private:
     QuadNode(size_t level, NodeCode&& nodeCode, QuadNode* nodeParent)
         : nodeLevel(level), nodeParent(nodeParent), nodeCode(nodeCode)
     {
-        std::cout << "QuadNode with location code. level: " << nodeLevel << ", x: " << nodeCode.x.to_string() <<
-            ", y: " << nodeCode.y.to_string() << "\n";
         childNodes.fill(nullptr);
     }
 
@@ -90,19 +88,24 @@ public:
     {
         // TODO: check if a given loc is valid from a current QuadNode POV, i.e. first
         // "currentlevelNo - 1" bits of (loc ^ nodeCode) are equal to 0.
-        bool childLocX = loc.x[totalLevels - nodeLevel - 1];
-        bool childLocY = loc.y[totalLevels - nodeLevel - 1];
+        bool childLocX = loc.x[nodeLevel - 1];
+        bool childLocY = loc.y[nodeLevel - 1];
         return child(childLocX, childLocY);
     }
 
     QuadNode* child(bool locX, bool locY)
     {
+        if (0 == nodeLevel)
+            return this;
+
         uint32_t childNo = locToInt(locX, locY);
         if (childNodes[childNo] == nullptr)
         {
             NodeCode newNodeCode(nodeCode);
-            newNodeCode.x[totalLevels - nodeLevel - 1] = locX;
-            newNodeCode.y[totalLevels - nodeLevel - 1] = locY;
+            // Bitset position is counted from right (LSB), but LocationCode is checked from
+            // left (MSB)
+            newNodeCode.x[nodeLevel - 1] = locX;
+            newNodeCode.y[nodeLevel - 1] = locY;
             childNodes[childNo] = new QuadNode(nodeLevel - 1, std::move(newNodeCode), this);
         }
         return childNodes[childNo];
@@ -157,6 +160,11 @@ public:
     size_t level() const
     {
         return nodeLevel;
+    }
+
+    const NodeCode& locationCode() const
+    {
+        return nodeCode;
     }
 
     static uint32_t locToInt(bool locX, bool locY)
