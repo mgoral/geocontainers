@@ -60,7 +60,7 @@ public:
      */
     explicit QuadTree(size_t width)
         : width(width), startX(0), startY(0), nodeCapacity(0),
-        tr(startX, startY, width, width), root(maxLevels - 1)
+        tr(startX, startY, width, width)
     {
         checkRequirements();
     }
@@ -73,7 +73,7 @@ public:
      */
     QuadTree(size_t width, size_t capacity)
         : width(width), startX(0), startY(0), nodeCapacity(capacity),
-        tr(startX, startY, width, width), root(maxLevels - 1)
+        tr(startX, startY, width, width)
     {
         checkRequirements();
     }
@@ -86,7 +86,7 @@ public:
      */
     QuadTree(size_t width, int startX, int startY)
         : width(width), startX(startX), startY(startY), nodeCapacity(0),
-        tr(startX, startY, width, width), root(maxLevels - 1)
+        tr(startX, startY, width, width)
     {
         checkRequirements();
     }
@@ -105,7 +105,7 @@ public:
      */
     QuadTree(size_t width, int startX, int startY, size_t capacity)
         : width(width), startX(startX), startY(startY), nodeCapacity(capacity),
-        tr(startX, startY, width, width), root(maxLevels - 1)
+        tr(startX, startY, width, width)
     {
         checkRequirements();
     }
@@ -117,7 +117,7 @@ public:
      */
     void clear()
     {
-        root = TreeNode(maxLevels - 1);
+        root = TreeNode();
     }
 
     /**

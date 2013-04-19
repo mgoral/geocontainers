@@ -31,8 +31,11 @@ private:
     }
 
 public:
-    QuadNode(size_t level, QuadNode* nodeParent = nullptr)
-        : nodeLevel(level), nodeParent(nodeParent)
+    /**
+     * Default constructor. Always creates a root node.
+     */
+    QuadNode()
+        : nodeLevel(totalLevels - 1), nodeParent(nullptr)
     {
         childNodes.fill(nullptr);
     }
@@ -172,9 +175,9 @@ public:
         return ((locX << 1) + locY);
     }
 
-    const QuadNode* parent() const
+    QuadNode* parent()
     {
-        return parent;
+        return nodeParent;
     }
 
     /**
@@ -209,50 +212,53 @@ private:
     size_t nodeLevel;
     Objects storage;
 
-    const QuadNode* nodeParent;
+    QuadNode* nodeParent;
     Nodes childNodes;
     NodeCode nodeCode;
 };
 
-/*
-QuadNode* nextNode(QuadNode* node)
+template <typename T, size_t lev>
+QuadNode<T, lev>* nextNode(QuadNode<T, lev>* node)
 {
+    if (node == nullptr)
+        return nullptr;
+
     if (node->hasChildren())
     {
-        if (node->childExists(0, 0)) return child(QuadNode::locationToInt(0, 0));
-        else if (node->childExists(0, 1)) return child(QuadNode::locationToInt(0, 1));
-        else if (node->childExists(1, 0)) return child(QuadNode::locationToInt(1, 0));
-        else return child(QuadNode::locationToInt(1, 1));
+        if (node->childExists(0, 0)) return node->child(0, 0);
+        else if (node->childExists(0, 1)) return node->child(0, 1);
+        else if (node->childExists(1, 0)) return node->child(1, 0);
+        else return node->child(1, 1);
     }
     else
     {
-        // No children and node is a root node.
-        if (nullptr == node->parent())
-            return nullptr;
-
-        QuadNode* nodeParent;
-        while (1)
+        // initial prepare for the first check of parent node
+        bool x = node->locationCode().x[node->level()];
+        bool y = node->locationCode().y[node->level()];
+        node = node->parent();
+        while (node != nullptr)
         {
-            nodeParent = node->parent();
-            bool currNodeFound = false;
-            for (uint32_t i = 0; i < 4; ++i)
+            // evaluate node number in node->parent() child list and check only children with
+            // higher index.
+            for (uint32_t i = QuadNode<T, lev>::locToInt(x, y) + 1; i < 4; ++i)
             {
-                bool x = (i & 0x10) >> 1;
-                bool y = i & 0x01;
-                if (nodeParent->childExists(x, y))
+                bool cx = (i & 2) >> 1;
+                bool cy = i & 1;
+                if (node->childExists(cx, cy))
                 {
-                    if (nodeParent->child(x, y) == node)
-                        currNodeFound = true;
-                    else if (currNodeFound)
-                        return nodeParent->child(x, y)
+                    return node->child(cx, cy);
                 }
             }
+
+            // prepare the next (parent) node to check
+            x = node->locationCode().x[node->level()];
+            y = node->locationCode().y[node->level()];
+            node = node->parent();
         }
 
-        QuadNode* retNode = node->parent()
+        return nullptr;
     }
 }
-*/
 
 } // namespace geo
 
