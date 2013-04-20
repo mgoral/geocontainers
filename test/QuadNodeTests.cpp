@@ -207,3 +207,18 @@ TEST_F(QuadNodeTests, PreviousNodeOfNullPtrReturnsNull)
     QuadNode<int, 10>* child = nullptr;
     ASSERT_EQ(nullptr, previousNode(child));
 }
+
+TEST_F(QuadNodeTests, IsChildOfReturnsTrueWhenNodeIsAChildOfAnotherOne)
+{
+    ASSERT_TRUE(root.child(0,1)->child(1,0)->child(1,1)->isChildOf(root));
+}
+
+TEST_F(QuadNodeTests, IsChildOfReturnsFalseWhenNodeIsNotAChildOfAnotherOne)
+{
+    ASSERT_FALSE(root.child(0,1)->child(1,0)->child(1,1)->isChildOf(*(root.child(1,1))));
+}
+
+TEST_F(QuadNodeTests, IsChildOfReturnsFalseWhenChildLevelIsHigherThanItsSupposedParent)
+{
+    ASSERT_FALSE(root.child(0,1)->isChildOf(*(root.child(1,1)->child(1,1)->child(0,0))));
+}

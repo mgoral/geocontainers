@@ -4,6 +4,7 @@
 #include <array>
 #include <vector>
 #include <utility>
+#include <stdexcept>
 
 #include "LocationCode.hpp"
 
@@ -18,6 +19,7 @@ private:
     typedef ObjectWithLocationCode<ObjectType, totalLevels> StoredObject;
     typedef std::vector<StoredObject> Objects;
     typedef std::array<QuadNode<ObjectType, totalLevels>*, 4> Nodes;
+    typedef QuadNode<ObjectType, totalLevels> QuadNodeT;
 
 private:
     /**
@@ -37,6 +39,8 @@ public:
     QuadNode()
         : nodeLevel(totalLevels - 1), nodeParent(nullptr)
     {
+        if (totalLevels < 1)
+            throw std::invalid_argument("total levels number is less than 1");
         childNodes.fill(nullptr);
     }
 
@@ -102,7 +106,7 @@ public:
             return this;
 
         uint32_t childNo = locToInt(locX, locY);
-        if (childNodes[childNo] == nullptr)
+        if (childNodes[childNo] == nullptr && nodeLevel > 0)
         {
             NodeCode newNodeCode(nodeCode);
             // Bitset position is counted from right (LSB), but LocationCode is checked from
@@ -155,6 +159,23 @@ public:
         return false;
     }
 
+    bool isChildOf(const QuadNode& node) const
+    {
+        if (level() < node.level())
+        {
+            for (size_t i = totalLevels - 1; i >= node.level(); --i)
+            {
+                if (nodeCode.x[i] != node.locationCode().x[i] ||
+                    nodeCode.y[i] != node.locationCode().y[i])
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return false;
+    }
+
     void insert(StoredObject&& object)
     {
         storage.push_back(std::move(object));
@@ -200,12 +221,6 @@ public:
     StoredObject& operator[](size_t element)
     {
         return storage[element];
-    }
-
-private:
-    QuadNode* child(uint32_t childNo)
-    {
-
     }
 
 private:
