@@ -13,20 +13,6 @@
 
 namespace geo {
 
-/*
-template <typename ObjectType>
-class QuadNodeIterator
-: public std::iterator<std::bidirectional_iterator_tag, QuadNode<ObjectType> >
-{
-public:
-    explicit QuadNodeIterator(ObjectType& object) :
-
-private:
-    Objects::
-
-};
-*/
-
 /**
 * Main class to construct a Quad Tree.
 *
