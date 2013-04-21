@@ -72,11 +72,12 @@ public:
 
     friend void swap(QuadNode& first, QuadNode& second)
     {
-        std::swap(first.nodeLevel, second.nodeLevel);
-        std::swap(first.nodeParent, second.nodeParent);
+        using std::swap;
+        swap(first.nodeLevel, second.nodeLevel);
+        swap(first.nodeParent, second.nodeParent);
         first.storage.swap(second.storage);
         first.childNodes.swap(second.childNodes);
-        std::swap(first.nodeCode, second.nodeCode);
+        swap(first.nodeCode, second.nodeCode);
     }
 
     ~QuadNode()
