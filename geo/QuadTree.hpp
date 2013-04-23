@@ -10,6 +10,7 @@
 #include "internal/QuadNode.hpp"
 #include "internal/Coordinates.hpp"
 #include "internal/LocationCode.hpp"
+#include "internal/TreeNodeIterator.hpp"
 
 namespace geo {
 
@@ -36,6 +37,9 @@ class QuadTree
 private:
     typedef ObjectWithLocationCode<ElementType, maxLevels> StoredObject;
     typedef QuadNode<ElementType, maxLevels> TreeNode;
+
+public:
+    typedef TreeNodeIterator<TreeNode> iterator;
 
 public:
     /**
@@ -135,29 +139,29 @@ public:
      * @param  x   X-axis coordinate of val.
      * @param  y   Y-axis coordinate of val.
      * @param  val Element to be added.
-     * @raturn     True if a new element has been added properly and false if not.
+     * @raturn     Bidirectional iterator pointing to the new element location.
      */
-    bool insert(double x, double y, const ElementType& val)
+    iterator insert(double x, double y, const ElementType& val)
     {
         if (coordinatesAreOk(x, y))
         {
             return insert(StoredObject(
                 LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), val));
         }
-        return false;
+        return iterator();
     }
 
     /**
      * @see insert(double x, double y, const ElementType& newObject)
      */
-    bool insert(double x, double y, ElementType&& val)
+    iterator insert(double x, double y, ElementType&& val)
     {
         if (coordinatesAreOk(x, y))
         {
             return insert(StoredObject(
                 LocationCode<maxLevels>(tr.forward(Coordinates(x, y))), std::move(val)));
         }
-        return false;
+        return iterator();
     }
 
     /**
@@ -202,7 +206,7 @@ private:
         return node;
     }
 
-    bool insert(StoredObject&& toStore)
+    iterator insert(StoredObject&& toStore)
     {
         TreeNode* node = getNode(toStore.location);
         if (node->level() > 0)
@@ -222,8 +226,7 @@ private:
                 node = node->child(toStore.location);
             }
         }
-        node->insert(std::move(toStore));
-        return true;
+        return iterator(node, node->insert(std::move(toStore)));
     }
 
 private:

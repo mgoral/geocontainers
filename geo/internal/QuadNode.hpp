@@ -12,14 +12,17 @@ namespace geo {
 
 template <typename ObjectType, size_t totalLevels>
 class QuadNode {
-public:
-    typedef LocationCode<totalLevels> NodeCode;
-
 private:
     typedef ObjectWithLocationCode<ObjectType, totalLevels> StoredObject;
     typedef std::vector<StoredObject> Objects;
     typedef std::array<QuadNode<ObjectType, totalLevels>*, 4> Nodes;
     typedef QuadNode<ObjectType, totalLevels> QuadNodeT;
+
+public:
+    typedef LocationCode<totalLevels> NodeCode;
+    typedef ObjectType ElementType;
+    typedef typename Objects::iterator iterator;
+    typedef typename Objects::const_iterator const_iterator;
 
 private:
     /**
@@ -92,6 +95,16 @@ public:
         childNodes[3] = nullptr;
     }
 
+    iterator begin()
+    {
+        return storage.begin();
+    }
+
+    const_iterator begin() const
+    {
+        return storage.begin();
+    }
+
     QuadNode* child(const NodeCode& loc)
     {
         // TODO: check if a given loc is valid from a current QuadNode POV, i.e. first
@@ -137,13 +150,32 @@ public:
         return storage.size();
     }
 
+    iterator end()
+    {
+        return storage.end();
+    }
+
+    const_iterator end() const
+    {
+        return storage.end();
+    }
+
+    void erase(const iterator& it)
+    {
+        storage.erase(it);
+    }
+
+    void erase(const iterator& itStart, const iterator& itEnd)
+    {
+        storage.erase(itStart, itEnd);
+    }
+
     /**
      * Removes all elements that match a given LocationCode.
      */
     void erase(const NodeCode& loc)
     {
-        typename Objects::iterator it;
-        for (it = storage.begin(); it != storage.end();)
+        for (iterator it = storage.begin(); it != storage.end();)
         {
             if (loc == (it->location))
                 it = storage.erase(it);
@@ -177,9 +209,10 @@ public:
         return false;
     }
 
-    void insert(StoredObject&& object)
+    iterator insert(StoredObject&& object)
     {
         storage.push_back(std::move(object));
+        return (end() - 1);
     }
 
     size_t level() const
