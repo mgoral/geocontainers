@@ -252,9 +252,9 @@ public:
         return tc;
     }
 
-    StoredObject& operator[](size_t element)
+    ElementType& operator[](size_t element)
     {
-        return storage[element];
+        return storage[element].object;
     }
 
 private:

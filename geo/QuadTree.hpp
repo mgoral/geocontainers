@@ -218,11 +218,13 @@ private:
             // relocated to the another child node.
             while (node->count() == nodeCapacity && node->level() > 0)
             {
-                for (size_t i = 0; i < node->count(); ++i)
+                typename TreeNode::iterator it;
+                typename TreeNode::iterator itEnd = node->end();
+                for (it = node->begin(); it != itEnd; ++it)
                 {
-                    StoredObject moved = (*node)[i];
-                    node->child(moved.location)->insert(std::move(moved));
+                    node->child(it->location)->insert(std::move(*it));
                 }
+                node->clear();
                 node = node->child(toStore.location);
             }
         }
