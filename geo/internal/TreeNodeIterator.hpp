@@ -78,6 +78,30 @@ public:
         return ret;
     }
 
+    TreeNodeIteratorT& operator--()
+    {
+        if (pos == 0)
+        {
+            while (node != nullptr && node->count() > 0)
+            {
+                node = previousNode(node);
+                pos = node->count() - 1;
+            }
+        }
+        else
+        {
+            --pos;
+        }
+        return *this;
+    }
+
+    TreeNodeIteratorT operator--(int)
+    {
+        TreeNodeIteratorT ret(*this);
+        operator--();
+        return ret;
+    }
+
     friend void swap(TreeNodeIterator& first, TreeNodeIterator& second)
     {
         std::swap(first.node, second.node);
