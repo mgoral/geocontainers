@@ -40,14 +40,14 @@ public:
         return (node != nullptr);
     }
 
-    bool operator==(const TreeNodeIterator& rhs)
+    bool operator==(const TreeNodeIteratorT& rhs)
     {
-        return (node == rhs && pos == rhs.pos);
+        return (node == rhs.node && pos == rhs.pos);
     }
 
-    bool operator!=(const TreeNodeIterator& rhs)
+    bool operator!=(const TreeNodeIteratorT& rhs)
     {
-        return (node != rhs || pos != rhs.pos);
+        return (node != rhs.node || pos != rhs.pos);
     }
 
     typename TreeNode::ElementType& operator*() const
