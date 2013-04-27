@@ -50,13 +50,12 @@ public:
         return (nodeIt != rhs.nodeIt);
     }
 
-    typename NodeIterator::reference operator*() const
+    typename TreeNode::ElementType& operator*() const
     {
-        return *nodeIt;
+        return (*nodeIt).object;
     }
 
-    // TODO this somehow doesn't return reference to vector iterator
-    typename NodeIterator::pointer operator->() const
+    typename TreeNode::ElementType* operator->() const
     {
         return &(operator*());
     }

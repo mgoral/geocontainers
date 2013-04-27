@@ -276,3 +276,13 @@ TEST_F(QuadTreeTests, EraseOnlyRemovesMatchingElements)
     ASSERT_EQ((size_t)2, tree.size());
 }
 
+TEST_F(QuadTreeTests, InsertReturnsProperIterator)
+{
+    QuadTree<std::string> tree(4);
+    tree.insert(0, 0, "");
+    QuadTree<std::string>::iterator it = tree.insert(0, 0, "fake");
+
+    ASSERT_EQ((size_t)4, it->size());
+    ASSERT_EQ((size_t)4, (*it).size());
+
+}
