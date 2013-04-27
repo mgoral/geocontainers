@@ -14,7 +14,6 @@ class TreeNodeIterator
 {
 private:
     typedef std::iterator<std::bidirectional_iterator_tag, TreeNode> IteratorType;
-    typedef typename TreeNode::iterator NodeIterator;
     typedef TreeNodeIterator<TreeNode> TreeNodeIteratorT;
 
 public:
@@ -25,9 +24,9 @@ public:
     typedef typename IteratorType::pointer pointer;
 
 public:
-    TreeNodeIterator() : node(nullptr), nodeIt(0) {}
-    explicit TreeNodeIterator(TreeNode* node, NodeIterator it) : node(node), nodeIt(it) {}
-    TreeNodeIterator(const TreeNodeIterator& that) : node(that.node), nodeIt(that.nodeIt) {}
+    TreeNodeIterator() : node(nullptr), pos(0) {}
+    explicit TreeNodeIterator(TreeNode* node, size_t pos) : node(node), pos(pos) {}
+    TreeNodeIterator(const TreeNodeIterator& that) : node(that.node), pos(that.pos) {}
     ~TreeNodeIterator() {}
 
     TreeNodeIterator& operator=(TreeNodeIterator rhs)
@@ -43,17 +42,17 @@ public:
 
     bool operator==(const TreeNodeIterator& rhs)
     {
-        return (nodeIt == rhs.nodeIt);
+        return (node == rhs && pos == rhs.pos);
     }
 
     bool operator!=(const TreeNodeIterator& rhs)
     {
-        return (nodeIt != rhs.nodeIt);
+        return (node != rhs || pos != rhs.pos);
     }
 
     typename TreeNode::ElementType& operator*() const
     {
-        return (*nodeIt).object;
+        return (*node)[pos];
     }
 
     typename TreeNode::ElementType* operator->() const
@@ -63,11 +62,11 @@ public:
 
     TreeNodeIteratorT& operator++()
     {
-        ++nodeIt;
-        while (node != nullptr && nodeIt == node->end())
+        ++pos;
+        while (node != nullptr && pos >= node->count())
         {
             node = nextNode(node);
-            nodeIt = node->begin();
+            pos = 0;
         }
         return *this;
     }
@@ -82,12 +81,12 @@ public:
     friend void swap(TreeNodeIterator& first, TreeNodeIterator& second)
     {
         std::swap(first.node, second.node);
-        std::swap(first.nodeIt, second.nodeIt);
+        std::swap(first.pos, second.pos);
     }
 
 private:
     TreeNode* node;
-    NodeIterator nodeIt;
+    size_t pos;
 
 };
 

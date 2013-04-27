@@ -209,10 +209,10 @@ public:
         return false;
     }
 
-    iterator insert(StoredObject&& object)
+    size_t insert(StoredObject&& object)
     {
         storage.push_back(std::move(object));
-        return (end() - 1);
+        return (count() - 1);
     }
 
     size_t level() const
