@@ -15,6 +15,7 @@ class TreeNodeIterator
 private:
     typedef std::iterator<std::bidirectional_iterator_tag, TreeNode> IteratorType;
     typedef typename TreeNode::iterator NodeIterator;
+    typedef TreeNodeIterator<TreeNode> TreeNodeIteratorT;
 
 public:
     typedef std::bidirectional_iterator_tag iterator_category;
@@ -60,7 +61,7 @@ public:
         return &(operator*());
     }
 
-    NodeIterator operator++()
+    TreeNodeIteratorT& operator++()
     {
         ++nodeIt;
         while (node != nullptr && nodeIt == node->end())
@@ -68,7 +69,14 @@ public:
             node = nextNode(node);
             nodeIt = node->begin();
         }
-        return nodeIt;
+        return *this;
+    }
+
+    TreeNodeIteratorT operator++(int)
+    {
+        TreeNodeIteratorT ret(*this);
+        operator++();
+        return ret;
     }
 
     friend void swap(TreeNodeIterator& first, TreeNodeIterator& second)
