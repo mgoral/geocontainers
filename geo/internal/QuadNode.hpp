@@ -285,6 +285,16 @@ public:
         return storage[element].object;
     }
 
+    bool operator==(const QuadNodeT& rhs) const
+    {
+        return (nodeCode == rhs.nodeCode && nodeLevel == rhs.nodeLevel);
+    }
+
+    bool operator!=(const QuadNodeT& rhs) const
+    {
+        return !(operator==(rhs));
+    }
+
 private:
     size_t nodeLevel;
     Objects storage;

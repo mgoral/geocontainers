@@ -266,3 +266,27 @@ TEST_F(QuadNodeTests, RightMostNodeReturnsSelfWhenThereAreNoChildren)
     QuadNode<int, 10> childlessRoot;
     ASSERT_EQ(&childlessRoot, childlessRoot.rightMostNode());
 }
+
+TEST_F(QuadNodeTests, TheSameNodesAreEqual)
+{
+    QuadNode<int, 10> eqRoot;
+    ASSERT_TRUE(eqRoot == eqRoot);
+}
+
+TEST_F(QuadNodeTests, DifferentNodesAreNotEqual)
+{
+    QuadNode<int, 10> eqRoot;
+    ASSERT_FALSE(eqRoot == *(eqRoot.child(0,0)));
+}
+
+TEST_F(QuadNodeTests, DifferentNodesAreDifferent)
+{
+    QuadNode<int, 10> eqRoot;
+    ASSERT_TRUE(eqRoot != *(eqRoot.child(0,1)));
+}
+
+TEST_F(QuadNodeTests, TheSameNodesAreNotDifferent)
+{
+    QuadNode<int, 10> eqRoot;
+    ASSERT_FALSE(eqRoot != eqRoot);
+}
