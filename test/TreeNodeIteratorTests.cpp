@@ -66,5 +66,5 @@ TEST_F(TreeNodeIteratorTests, DefaultIteratorsAreEqual)
 {
     TreeNodeIterator<FakeNode> a;
     TreeNodeIterator<FakeNode> b;
-    ASSERT_TRUE(a == b);
+    ASSERT_EQ(a, b);
 }

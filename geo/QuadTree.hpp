@@ -102,6 +102,18 @@ public:
 
     ~QuadTree() {}
 
+    iterator begin()
+    {
+        if (root.child(0, 0).hasChildren() || root.child(0, 0).count() > 0)
+            return iterator(&(root.leftMostNode()), 0);
+        return end();
+    }
+
+    iterator end()
+    {
+        return iterator(&root, 0);
+    }
+
     /**
      * Clear the tree, removing and destroying all elements stored inside the QuadTree container.
      */
@@ -195,6 +207,9 @@ private:
     TreeNode* getNode(const LocationCode<maxLevels>& code)
     {
         int level = maxLevels;
+
+        // FIXME: it's really important to start from root.child (as root is a header) and ALL TESTS
+        // PASS WHEN IT'S CHANGED TO: `node = &root;`
         TreeNode* node = &(root.child(0, 0));
 
         do

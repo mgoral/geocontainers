@@ -284,5 +284,38 @@ TEST_F(QuadTreeTests, InsertReturnsProperIterator)
 
     ASSERT_EQ((size_t)4, it->size());
     ASSERT_EQ((size_t)4, (*it).size());
+}
 
+TEST_F(QuadTreeTests, BeginIsEqualToEndWhenTreeIsEmpty)
+{
+    QuadTree<std::string> tree(4, 4);
+    ASSERT_EQ(tree.end(), tree.begin());
+}
+
+TEST_F(QuadTreeTests, BeginIsNotEqualToEndWhenTreeIsNotEmpty)
+{
+    QuadTree<std::string> tree(4, 4);
+    tree.insert(0, 0, "fake");
+    ASSERT_NE(tree.end(), tree.begin());
+}
+
+TEST_F(QuadTreeTests, IteratingThroughAllElements)
+{
+    // FIXME: test is implementation dependent. Order of iteration is not specified and we have to
+    // check elements in a correct order to be able to perform the test.
+    QuadTree<int> tree(4, 2);
+    tree.insert(0, 0, 10);
+    tree.insert(0, 0, 11);
+    tree.insert(0, 1, 12);
+    tree.insert(0, 3, 13);
+    tree.insert(2, 4, 14);
+
+    int n = 10;
+    QuadTree<int>::iterator it;
+    for (it = tree.begin(); it != tree.end(); ++it)
+    {
+        EXPECT_EQ(n, *it);
+        ++n;
+    }
+    ASSERT_EQ(14, n);
 }
