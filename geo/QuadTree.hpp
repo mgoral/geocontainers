@@ -195,13 +195,13 @@ private:
     TreeNode* getNode(const LocationCode<maxLevels>& code)
     {
         int level = maxLevels;
-        TreeNode* node = &root;
+        TreeNode* node = &(root.child(0, 0));
 
         do
         {
             if (!node->hasChildren())
                 break;
-            node = node->child(code);
+            node = &(node->child(code));
         } while (--level);
         return node;
     }
@@ -222,10 +222,10 @@ private:
                 typename TreeNode::iterator itEnd = node->end();
                 for (it = node->begin(); it != itEnd; ++it)
                 {
-                    node->child(it->location)->insert(std::move(*it));
+                    node->child(it->location).insert(std::move(*it));
                 }
                 node->clear();
-                node = node->child(toStore.location);
+                node = &(node->child(toStore.location));
             }
         }
         return iterator(node, node->insert(std::move(toStore)));
@@ -238,6 +238,7 @@ private:
     size_t nodeCapacity;
 
     CoordTr<0, 0, 1, 1> tr;
+    TreeNode header;
     TreeNode root;
 };
 

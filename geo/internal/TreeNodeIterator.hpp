@@ -62,11 +62,17 @@ public:
 
     TreeNodeIteratorT& operator++()
     {
-        ++pos;
-        while (node != nullptr && pos >= node->count())
+        if (*node != node->parent())
         {
-            node = nextNode(node);
-            pos = 0;
+            ++pos;
+        }
+        else
+        {
+            while (*node != node->parent() && pos >= node->count())
+            {
+                node = &(nextNode(*node));
+                pos = 0;
+            }
         }
         return *this;
     }
@@ -82,9 +88,9 @@ public:
     {
         if (pos == 0)
         {
-            while (node != nullptr && node->count() > 0)
+            while (*node != node->parent() && node->count() > 0)
             {
-                node = previousNode(node);
+                node = &(previousNode(*node));
                 pos = node->count() - 1;
             }
         }

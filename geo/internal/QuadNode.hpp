@@ -40,11 +40,18 @@ public:
      * Default constructor. Always creates a root node.
      */
     QuadNode()
-        : nodeLevel(totalLevels - 1), nodeParent(nullptr)
+        : nodeLevel(totalLevels), nodeParent(nullptr)
     {
         if (totalLevels < 1)
             throw std::invalid_argument("total levels number is less than 1");
         childNodes.fill(nullptr);
+
+        // Only the super-root (header) is created via default constructor. It's created for
+        // bidirectional iteration purposes. Header is a node that is pointed by a tree end()
+        // function. User must be able to perform `--end()` operation which should return a proper,
+        // rightmost node.
+        NodeCode newNodeCode(nodeCode);
+        childNodes[0] = new QuadNode(totalLevels - 1, std::move(newNodeCode), this);
     }
 
     QuadNode(QuadNode&& that)
@@ -105,7 +112,7 @@ public:
         return storage.begin();
     }
 
-    QuadNode* child(const NodeCode& loc)
+    QuadNode& child(const NodeCode& loc)
     {
         // TODO: check if a given loc is valid from a current QuadNode POV, i.e. first
         // "currentlevelNo - 1" bits of (loc ^ nodeCode) are equal to 0.
@@ -114,10 +121,10 @@ public:
         return child(childLocX, childLocY);
     }
 
-    QuadNode* child(bool locX, bool locY)
+    QuadNode& child(bool locX, bool locY)
     {
         if (0 == nodeLevel)
-            return this;
+            return *this;
 
         uint32_t childNo = locToInt(locX, locY);
         if (childNodes[childNo] == nullptr && nodeLevel > 0)
@@ -129,7 +136,7 @@ public:
             newNodeCode.y[nodeLevel - 1] = locY;
             childNodes[childNo] = new QuadNode(nodeLevel - 1, std::move(newNodeCode), this);
         }
-        return childNodes[childNo];
+        return *childNodes[childNo];
     }
 
     bool childExists(bool locX, bool locY) const
@@ -193,7 +200,7 @@ public:
     }
 
     // TODO: method should be const somehow
-    QuadNodeT* leftMostNode()
+    QuadNode& leftMostNode()
     {
         QuadNodeT* retNode = this;
         while (retNode->hasChildren())
@@ -203,11 +210,11 @@ public:
             else if (retNode->childNodes[2] != nullptr) retNode = retNode->childNodes[2];
             else retNode = retNode->childNodes[3];
         }
-        return retNode;
+        return *retNode;
     }
 
     // TODO: method should be const somehow
-    QuadNodeT* rightMostNode()
+    QuadNode& rightMostNode()
     {
         QuadNodeT* retNode = this;
         while (retNode->hasChildren())
@@ -217,7 +224,7 @@ public:
             else if (retNode->childNodes[1] != nullptr) retNode = retNode->childNodes[1];
             else retNode = retNode->childNodes[0];
         }
-        return retNode;
+        return *retNode;
     }
 
     bool isChildOf(const QuadNode& node) const
@@ -258,9 +265,11 @@ public:
         return ((locX << 1) + locY);
     }
 
-    QuadNode* parent()
+    QuadNode& parent()
     {
-        return nodeParent;
+        if (nodeParent == nullptr)
+            return *this;
+        return *nodeParent;
     }
 
     /**
@@ -305,75 +314,78 @@ private:
 };
 
 template <typename T, size_t lev>
-QuadNode<T, lev>* nextNode(QuadNode<T, lev>* node)
+QuadNode<T, lev>& nextNode(QuadNode<T, lev>& node)
 {
-    if (node == nullptr)
-        return nullptr;
-
-    if (node->hasChildren())
+    if (node.hasChildren())
     {
-        if (node->childExists(0, 0)) return node->child(0, 0);
-        else if (node->childExists(0, 1)) return node->child(0, 1);
-        else if (node->childExists(1, 0)) return node->child(1, 0);
-        else return node->child(1, 1);
+        if (node.childExists(0, 0)) return node.child(0, 0);
+        else if (node.childExists(0, 1)) return node.child(0, 1);
+        else if (node.childExists(1, 0)) return node.child(1, 0);
+        else return node.child(1, 1);
     }
     else
     {
+        QuadNode<T, lev>* refNode = &node;
+
         // initial prepare for the first check of parent node
-        bool x = node->locationCode().x[node->level()];
-        bool y = node->locationCode().y[node->level()];
-        node = node->parent();
-        while (node != nullptr)
+        bool x = refNode->locationCode().x[refNode->level()];
+        bool y = refNode->locationCode().y[refNode->level()];
+        while (*refNode != refNode->parent())
         {
+            refNode = &(refNode->parent());
             // evaluate node number in node->parent() child list and check only children with
             // higher index.
             for (uint32_t i = QuadNode<T, lev>::locToInt(x, y) + 1; i < 4; ++i)
             {
                 bool cx = (i & 2) >> 1;
                 bool cy = i & 1;
-                if (node->childExists(cx, cy))
+                if (refNode->childExists(cx, cy))
                 {
-                    return node->child(cx, cy);
+                    return refNode->child(cx, cy);
                 }
             }
 
             // prepare the next (parent) node to check
-            x = node->locationCode().x[node->level()];
-            y = node->locationCode().y[node->level()];
-            node = node->parent();
+            x = refNode->locationCode().x[refNode->level()];
+            y = refNode->locationCode().y[refNode->level()];
         }
 
-        return nullptr;
+        // At this point refNode == refNode.parent(), so it's a root. We'll return it as nextNode()
+        // of the last (rightmost) node in a tree.
+        return *refNode;
     }
 }
 
 template <typename T, size_t lev>
-QuadNode<T, lev>* previousNode(QuadNode<T, lev>* node)
+QuadNode<T, lev>& previousNode(QuadNode<T, lev>& node)
 {
-    if (node == nullptr || node->parent() == nullptr)
-        return nullptr;
+    // If root node is given, then its previousNode is the rightmost one.
+    if (node.parent() == node)
+        return node.rightMostNode();
 
-    bool x = node->locationCode().x[node->level()];
-    bool y = node->locationCode().y[node->level()];
-    node = node->parent();
+    QuadNode<T, lev>* refNode = &node;
+
+    bool x = refNode->locationCode().x[refNode->level()];
+    bool y = refNode->locationCode().y[refNode->level()];
+    refNode = &(refNode->parent());
     for (int i = QuadNode<T, lev>::locToInt(x, y) - 1; i >= 0; --i)
     {
         bool cx = (i & 2) >> 1;
         bool cy = i & 1;
-        if (node->childExists(cx, cy))
+        if (refNode->childExists(cx, cy))
         {
-            node = node->child(cx, cy);
-            while (node->hasChildren())
+            refNode = &(refNode->child(cx, cy));
+            while (refNode->hasChildren())
             {
-                if (node->childExists(1, 1)) node = node->child(1, 1);
-                else if (node->childExists(1, 0)) node = node->child(1, 0);
-                else if (node->childExists(0, 1)) node = node->child(0, 1);
-                else node = node->child(0, 0);
+                if (refNode->childExists(1, 1)) refNode = &(refNode->child(1, 1));
+                else if (refNode->childExists(1, 0)) refNode = &(refNode->child(1, 0));
+                else if (refNode->childExists(0, 1)) refNode = &(refNode->child(0, 1));
+                else refNode = &(refNode->child(0, 0));
             }
-            return node;
+            return *refNode;
         }
     }
-    return node;
+    return *refNode;
 }
 
 } // namespace geo
