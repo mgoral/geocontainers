@@ -222,3 +222,47 @@ TEST_F(QuadNodeTests, IsChildOfReturnsFalseWhenChildLevelIsHigherThanItsSupposed
 {
     ASSERT_FALSE(root.child(0,1)->isChildOf(*(root.child(1,1)->child(1,1)->child(0,0))));
 }
+
+TEST_F(QuadNodeTests, LocToInt_0_0)
+{
+    ASSERT_EQ((uint32_t)0, (QuadNode<int, 10>::locToInt(0, 0)));
+}
+
+TEST_F(QuadNodeTests, LocToInt_0_1)
+{
+    ASSERT_EQ((uint32_t)1, (QuadNode<int, 10>::locToInt(0, 1)));
+}
+
+TEST_F(QuadNodeTests, LocToInt_1_0)
+{
+    ASSERT_EQ((uint32_t)2, (QuadNode<int, 10>::locToInt(1, 0)));
+}
+
+TEST_F(QuadNodeTests, LocToInt_1_1)
+{
+    ASSERT_EQ((uint32_t)3, (QuadNode<int, 10>::locToInt(1, 1)));
+}
+
+TEST_F(QuadNodeTests, LeftMostNodeReturnsProperNode)
+{
+    createTree();
+    ASSERT_EQ(root.child(0,0)->child(0,0), root.leftMostNode());
+}
+
+TEST_F(QuadNodeTests, LeftMostNodeReturnsSelfWhenThereAreNoChildren)
+{
+    QuadNode<int, 10> childlessRoot;
+    ASSERT_EQ(&childlessRoot, childlessRoot.leftMostNode());
+}
+
+TEST_F(QuadNodeTests, RightMostNodeReturnsProperNode)
+{
+    createTree();
+    ASSERT_EQ(root.child(1,1)->child(1,0), root.rightMostNode());
+}
+
+TEST_F(QuadNodeTests, RightMostNodeReturnsSelfWhenThereAreNoChildren)
+{
+    QuadNode<int, 10> childlessRoot;
+    ASSERT_EQ(&childlessRoot, childlessRoot.rightMostNode());
+}

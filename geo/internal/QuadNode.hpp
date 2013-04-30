@@ -192,6 +192,34 @@ public:
         return false;
     }
 
+    // TODO: method should be const somehow
+    QuadNodeT* leftMostNode()
+    {
+        QuadNodeT* retNode = this;
+        while (retNode->hasChildren())
+        {
+            if (retNode->childNodes[0] != nullptr) retNode = retNode->childNodes[0];
+            else if (retNode->childNodes[1] != nullptr) retNode = retNode->childNodes[1];
+            else if (retNode->childNodes[2] != nullptr) retNode = retNode->childNodes[2];
+            else retNode = retNode->childNodes[3];
+        }
+        return retNode;
+    }
+
+    // TODO: method should be const somehow
+    QuadNodeT* rightMostNode()
+    {
+        QuadNodeT* retNode = this;
+        while (retNode->hasChildren())
+        {
+            if (retNode->childNodes[3] != nullptr) retNode = retNode->childNodes[3];
+            else if (retNode->childNodes[2] != nullptr) retNode = retNode->childNodes[2];
+            else if (retNode->childNodes[1] != nullptr) retNode = retNode->childNodes[1];
+            else retNode = retNode->childNodes[0];
+        }
+        return retNode;
+    }
+
     bool isChildOf(const QuadNode& node) const
     {
         if (level() < node.level())
