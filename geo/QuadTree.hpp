@@ -176,6 +176,32 @@ public:
         return iterator();
     }
 
+    // TODO: Implement const version of near(). This requires const_iterator, const getExistingNode
+    // implementation and const QuadNode::existingChild implementation. Also, getExistingNode must
+    // not call child(), so in near() const check if there is root.child(0,0) and if not, return
+    // empty iterators.
+
+    /**
+     * Return the bounds of a range that includes all the elements that are near specified (x, y).
+     *
+     * @param  x X-axis coordinate of val.
+     * @param  y Y-axis coordinate of val.
+     * @return   Pair of iterators that point to the first and the last of the elements that are
+     *           near the (x, y) point. If any of given x or y is outside of a QuadTree range (i.e.
+     *           x >= startX + width or y >= startY + width), pair of empty iterators is returned.
+     */
+    std::pair<iterator, iterator> near(double x, double y)
+    {
+        if (coordinatesAreOk(x, y))
+        {
+            TreeNode* node = getExistingNode(
+                LocationCode<maxLevels>(tr.forward(Coordinates(x, y))));
+            return std::pair<iterator, iterator>(
+                iterator(node, 0), ++iterator(node, node->count()));
+        }
+        return std::pair<iterator, iterator>(iterator(), iterator());
+    }
+
     /**
      * @return Total number of elements in QuadTree.
      */
@@ -197,11 +223,28 @@ private:
             throw std::invalid_argument("size is not power of 2");
     }
 
-    bool coordinatesAreOk(double x, double y)
+    bool coordinatesAreOk(double x, double y) const
     {
         if (x >= startX + width || y >= startY + width || x < startX || y < startY)
             return false;
         return true;
+    }
+
+    TreeNode* getExistingNode(const LocationCode<maxLevels>& code)
+    {
+        int level = maxLevels;
+
+        // FIXME: it's really important to start from root.child (as root is a header) and ALL TESTS
+        // PASS WHEN IT'S CHANGED TO: `node = &root;`
+        TreeNode* node = &(root.child(0, 0));
+
+        do
+        {
+            if (!node->hasChildren() || node == &(node->existingChild(code)))
+                break;
+            node = &(node->existingChild(code));
+        } while (--level);
+        return node;
     }
 
     TreeNode* getNode(const LocationCode<maxLevels>& code)
@@ -214,7 +257,7 @@ private:
 
         do
         {
-            if (!node->hasChildren())
+            if (!node->hasChildren() || node == &(node->child(code)))
                 break;
             node = &(node->child(code));
         } while (--level);

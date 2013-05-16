@@ -112,6 +112,7 @@ public:
         return storage.begin();
     }
 
+    // FIXME: can the following 2 functions be written without a redundant code?
     QuadNode& child(const NodeCode& loc)
     {
         // TODO: check if a given loc is valid from a current QuadNode POV, i.e. first
@@ -121,6 +122,18 @@ public:
         return child(childLocX, childLocY);
     }
 
+    QuadNode& existingChild(const NodeCode& loc)
+    {
+        // TODO: check if a given loc is valid from a current QuadNode POV, i.e. first
+        // "currentlevelNo - 1" bits of (loc ^ nodeCode) are equal to 0.
+        bool childLocX = loc.x[nodeLevel - 1];
+        bool childLocY = loc.y[nodeLevel - 1];
+        return existingChild(childLocX, childLocY);
+    }
+
+    /**
+     * Return a child with a given location. A new child is created if it doesn't exist.
+     */
     QuadNode& child(bool locX, bool locY)
     {
         if (0 == nodeLevel)
@@ -137,6 +150,17 @@ public:
             childNodes[childNo] = new QuadNode(nodeLevel - 1, std::move(newNodeCode), this);
         }
         return *childNodes[childNo];
+    }
+
+    /**
+     * Return a child with a given location. If a child doesn't exist, current node is returned
+     * instead.
+     */
+    QuadNode& existingChild(bool locX, bool locY)
+    {
+        if (childExists(locX, locY) && nodeLevel > 0)
+            return *childNodes[locToInt(locX, locY)];
+        return *this;
     }
 
     bool childExists(bool locX, bool locY) const

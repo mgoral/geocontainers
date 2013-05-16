@@ -319,3 +319,34 @@ TEST_F(QuadTreeTests, IteratingThroughAllElements)
     }
     ASSERT_EQ(14, n);
 }
+
+TEST_F(QuadTreeTests, NearReturnsProperBoundaries)
+{
+    QuadTree<int> tree(4, 2);
+    tree.insert(0, 0, 10);
+    tree.insert(0, 1, 11);
+    std::pair<QuadTree<int>::iterator, QuadTree<int>::iterator> range = tree.near(0.5, 0.5);
+
+    QuadTree<int>::iterator it = range.first;
+    ASSERT_EQ(10, *it);
+    ++it;
+    ASSERT_EQ(11, *it);
+    ++it;
+    ASSERT_EQ(range.second, it);
+}
+
+TEST_F(QuadTreeTests, NearReturnsEmptyIteratorsWhen_X_IsOutOfRange)
+{
+    QuadTree<int> tree(2, 2);
+    std::pair<QuadTree<int>::iterator, QuadTree<int>::iterator> range = tree.near(3, 0);
+    ASSERT_EQ(QuadTree<int>::iterator(), range.first);
+    ASSERT_EQ(QuadTree<int>::iterator(), range.second);
+}
+
+TEST_F(QuadTreeTests, NearReturnsEmptyIteratorsWhen_Y_IsOutOfRange)
+{
+    QuadTree<int> tree(2, 2);
+    std::pair<QuadTree<int>::iterator, QuadTree<int>::iterator> range = tree.near(0, 3);
+    ASSERT_EQ(QuadTree<int>::iterator(), range.first);
+    ASSERT_EQ(QuadTree<int>::iterator(), range.second);
+}

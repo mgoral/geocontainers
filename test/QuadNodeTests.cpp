@@ -271,3 +271,17 @@ TEST_F(QuadNodeTests, TheSameNodesAreNotDifferent)
     QuadNode<int, 10> eqRoot;
     ASSERT_FALSE(eqRoot != eqRoot);
 }
+
+TEST_F(QuadNodeTests, ExistingChildReturnsChildWhenItExists)
+{
+    createTree();
+    const QuadNode<int, 10>& child = root.existingChild(0, 0);
+    ASSERT_EQ(root.child(0,0), child);
+}
+
+TEST_F(QuadNodeTests, ExistingChildReturnsCurrentNodeWhenChildDoesntExist)
+{
+    createTree();
+    const QuadNode<int, 10>& child = root.existingChild(1, 0);
+    ASSERT_EQ(root, child);
+}

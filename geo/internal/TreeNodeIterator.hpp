@@ -25,7 +25,7 @@ public:
 
 public:
     TreeNodeIterator() : node(nullptr), pos(0) {}
-    explicit TreeNodeIterator(TreeNode* node, size_t pos) : node(node), pos(pos) {}
+    TreeNodeIterator(TreeNode* node, size_t pos) : node(node), pos(pos) {}
     TreeNodeIterator(const TreeNodeIterator& that) : node(that.node), pos(that.pos) {}
     ~TreeNodeIterator() {}
 
@@ -79,6 +79,7 @@ public:
         return ret;
     }
 
+    // FIXME
     TreeNodeIteratorT& operator--()
     {
         if (pos == 0)
