@@ -188,7 +188,7 @@ public:
      * @param  y Y-axis coordinate of val.
      * @return   Pair of iterators that point to the first and the last of the elements that are
      *           near the (x, y) point. If any of given x or y is outside of a QuadTree range (i.e.
-     *           x >= startX + width or y >= startY + width), pair of empty iterators is returned.
+     *           x >= startX + width or y >= startY + width), pair of end() is returned.
      */
     std::pair<iterator, iterator> near(double x, double y)
     {
@@ -199,7 +199,7 @@ public:
             return std::pair<iterator, iterator>(
                 iterator(node, 0), ++iterator(node, node->count()));
         }
-        return std::pair<iterator, iterator>(iterator(), iterator());
+        return std::pair<iterator, iterator>(end(), end());
     }
 
     /**
