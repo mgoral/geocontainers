@@ -9,8 +9,8 @@ GTEST_INC=$(GTEST_DIR)/include
 GMOCK_SRC=$(GMOCK_DIR)/src/gmock-all.cc
 GTEST_SRC=$(GTEST_DIR)/src/gtest-all.cc
 
-DEBUGFLAGS=-g -Wall -O0 -fno-inline -std=c++0x
-RELEASEFLAGS=-Wall -Os -std=c++0x
+DEBUGFLAGS=-g -Wall -Werror -O0 -fno-inline -std=c++0x
+RELEASEFLAGS=-Wall -Werror -Os -std=c++0x
 
 SRCS=$(wildcard test/*.cpp) $(GMOCK_SRC) $(GTEST_SRC)
 INC=geo $(GMOCK_INC) $(GTEST_INC) $(GMOCK_DIR) $(GTEST_DIR)
