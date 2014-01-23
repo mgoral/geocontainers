@@ -4,13 +4,16 @@
 #include <iterator>
 #include <type_traits>
 
+#ifdef GEO_DEBUG
+#include <iostream>
+#endif
+
 namespace geo {
 
 template <typename ObjectType, size_t totalLevels> class QuadNode;
 
 template <typename TreeNode>
-class TreeNodeIterator
-: public std::iterator<std::bidirectional_iterator_tag, TreeNode >
+class TreeNodeIterator : public std::iterator<std::bidirectional_iterator_tag, TreeNode >
 {
 private:
     typedef std::iterator<std::bidirectional_iterator_tag, TreeNode> IteratorType;
@@ -34,6 +37,13 @@ public:
         swap(*this, rhs);
         return *this;
     }
+
+#ifdef GEO_DEBUG
+    void printContents()
+    {
+        std::cout << "node: " << node << ", pos: " << pos << std::endl;
+    }
+#endif
 
     operator bool() const
     {
@@ -60,10 +70,13 @@ public:
         return &(operator*());
     }
 
+    // preincrementation (++it)
     TreeNodeIteratorT& operator++()
     {
         if (*node != node->parent())
+        {
             ++pos;
+        }
         while (*node != node->parent() && pos >= node->count())
         {
             node = &(nextNode(*node));
@@ -72,6 +85,7 @@ public:
         return *this;
     }
 
+    // postincrementation (it++)
     TreeNodeIteratorT operator++(int)
     {
         TreeNodeIteratorT ret(*this);
