@@ -13,6 +13,14 @@ protected:
 
     void createTree()
     {
+        //                          (HEADER)
+        //                              |
+        //                  ........ (ROOT) .....
+        //                 /            |       |
+        //    ........ (0,0) ..       (0,1)    (1,1)
+        //   /     /     |    |        |        |
+        // (0,0) (0,1) (1,0) (1,1)    (1,0)    (1,0)
+
         root.child(0,0);
         root.child(0,0).child(0,0);
         root.child(0,0).child(0,1);
