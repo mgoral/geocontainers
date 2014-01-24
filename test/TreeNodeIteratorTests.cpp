@@ -91,6 +91,8 @@ TEST_F(TreeNodeIteratorTests, IncrementationDoesntChangeIteratorOnHeaderNode)
 {
     // Header: tree Super Root, usually returned by tree::end(). It is special, because it is its
     // own parent (i.e. Node::parent() returns *this)
+    // Note that iterator position on a storage shouldn't be taken into account (and shouldn't
+    // change).
 
     NodeMock node;
 
@@ -99,12 +101,35 @@ TEST_F(TreeNodeIteratorTests, IncrementationDoesntChangeIteratorOnHeaderNode)
     EXPECT_CALL(node, NotEquals(Ref(node)))
         .WillRepeatedly(Return(false));
 
-    TreeNodeIterator<NodeMock> old(&node, 0);
-    TreeNodeIterator<NodeMock> testIt(&node, 0);
+    TreeNodeIterator<NodeMock> old(&node, 1);
+    TreeNodeIterator<NodeMock> testIt(&node, 1);
 
-    TreeNodeIterator<NodeMock> ret = testIt++;
+    testIt++;
 
     ASSERT_EQ(old, testIt);
+}
+
+TEST_F(TreeNodeIteratorTests, IncrementationReturnsCorrectValue)
+{
+    NodeMock parent;
+    NodeMock node;
+
+    configureNodeParent(node, parent);
+
+    EXPECT_CALL(node, count())
+        .WillRepeatedly(Return(3));
+
+    TreeNodeIterator<NodeMock> testIt(&node, 1);
+    testIt++;
+
+    // We will check to what iterator points by dereferencing it.
+    // It should point to 2nd element.
+    NodeMock::ElementType toRet = 42;
+    EXPECT_CALL(node, At(2))
+        .WillOnce(ReturnRef(toRet));
+
+    NodeMock::ElementType ret = *testIt;
+    ASSERT_EQ(toRet, ret);
 }
 
 TEST_F(TreeNodeIteratorTests, PostIncrementationReturnsOldIterator)
@@ -114,13 +139,13 @@ TEST_F(TreeNodeIteratorTests, PostIncrementationReturnsOldIterator)
 
     configureNodeParent(node, parent);
 
-    // Report that mock is able to store more elements than iterator increments to. That way
-    // iterator won't jump to the next node.
+    // Report that mock stores more elements than iterator increments to. This way iterator won't
+    // jump to the next node.
     EXPECT_CALL(node, count())
         .WillRepeatedly(Return(3));
 
-    TreeNodeIterator<NodeMock> old(&node, 0);
-    TreeNodeIterator<NodeMock> testIt(&node, 0);
+    TreeNodeIterator<NodeMock> old(&node, 1);
+    TreeNodeIterator<NodeMock> testIt(&node, 1);
 
     TreeNodeIterator<NodeMock> ret = testIt++;
 
@@ -176,8 +201,219 @@ TEST_F(TreeNodeIteratorTests, IteratorIncrementationCanSwitchToNextNode)
         .WillOnce(ReturnRef(toRet));
 
     TreeNodeIterator<NodeMock> testIt(&node, 2);
-    testIt++; // Actually, that's the whole test body ;)
+    testIt++; // Whole test trigger ;)
     NodeMock::ElementType ret = *testIt;
 
     ASSERT_EQ(toRet, ret);
 }
+
+/**
+  * This test checks if TreeNodeIterator can increment nodes in a loop. We start at 'node' but
+  * incrementing iterator should jump to 'next'. 'next' doesn't have any elements that iterator
+  * can point to so it continues its search and finds 'nextNext' which fortunately has some
+  * elements stored.
+  */
+TEST_F(TreeNodeIteratorTests, IteratorIncrementationCanJumpBySeveralNodes)
+{
+
+    NodeMock parent;
+    NodeMock next;
+    NodeMock nextNext;
+    NodeMock node;
+
+    configureNodeParent(node, parent);
+    configureNodeParent(next, parent);
+    configureNodeParent(nextNext, parent);
+
+    // This time we initialize iterator on last position of maximum node storage size. It should
+    // cause iterator to jump to the next node on incrementation.
+    EXPECT_CALL(node, count())
+        .WillRepeatedly(Return(3));
+    EXPECT_CALL(node, NextNode())
+        .WillOnce(ReturnRef(next));
+
+    // Iterator will check if next node has any elements that it can point to. Say no, so we can
+    // jump to nextNext.
+    EXPECT_CALL(next, count())
+        .WillRepeatedly(Return(0));
+    EXPECT_CALL(next, NextNode())
+        .WillOnce(ReturnRef(nextNext));
+
+    // nextNext is the final node in this test.
+    EXPECT_CALL(nextNext, count())
+        .WillRepeatedly(Return(3));
+
+    // We check if iterator points to the new node by expecting that it will ask for its storage on
+    // dereferencing.
+    NodeMock::ElementType toRet = 31;
+    EXPECT_CALL(nextNext, At(0))
+        .WillOnce(ReturnRef(toRet));
+
+    TreeNodeIterator<NodeMock> testIt(&node, 2);
+    testIt++; // Whole test trigger ;)
+    NodeMock::ElementType ret = *testIt;
+
+    ASSERT_EQ(toRet, ret);
+}
+
+TEST_F(TreeNodeIteratorTests, DecrementationOnHeaderNodeReturnsCorrectPreviousNode)
+{
+    // Header: tree Super Root, usually returned by tree::end(). It is special, because it is its
+    // own parent (i.e. Node::parent() returns *this)
+
+    NodeMock previousParent;
+    NodeMock previous;
+    NodeMock node;
+
+    configureNodeParent(previous, previousParent);
+
+    EXPECT_CALL(node, parent())
+        .WillRepeatedly(ReturnRef(node));
+    EXPECT_CALL(node, NotEquals(Ref(node)))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(node, PreviousNode())
+        .WillOnce(ReturnRef(previous));
+
+    EXPECT_CALL(previous, count())
+        .WillRepeatedly(Return(3));
+
+    // We will check to what iterator points by dereferencing it.
+    // It should point to the last element of 'previous'.
+    NodeMock::ElementType toRet = 11;
+    EXPECT_CALL(previous, At(2))
+        .WillOnce(ReturnRef(toRet));
+
+    TreeNodeIterator<NodeMock> testIt(&node, 0);
+    testIt--;
+
+    NodeMock::ElementType ret = *testIt;
+
+    ASSERT_EQ(toRet, ret);
+}
+
+TEST_F(TreeNodeIteratorTests, DecrementationReturnsCorrectValue)
+{
+    NodeMock parent;
+    NodeMock node;
+
+    configureNodeParent(node, parent);
+
+    TreeNodeIterator<NodeMock> testIt(&node, 1);
+    testIt--;
+
+    // We will check to what iterator points by dereferencing it.
+    // It should point to 0th element.
+    NodeMock::ElementType toRet = 42;
+    EXPECT_CALL(node, At(0))
+        .WillOnce(ReturnRef(toRet));
+
+    NodeMock::ElementType ret = *testIt;
+    ASSERT_EQ(toRet, ret);
+}
+
+TEST_F(TreeNodeIteratorTests, PostDecrementationReturnsOldIterator)
+{
+    NodeMock parent;
+    NodeMock node;
+
+    configureNodeParent(node, parent);
+
+    TreeNodeIterator<NodeMock> old(&node, 1);
+    TreeNodeIterator<NodeMock> testIt(&node, 1);
+
+    TreeNodeIterator<NodeMock> ret = testIt--;
+
+    EXPECT_NE(old, testIt);
+    EXPECT_EQ(old, ret);
+}
+
+TEST_F(TreeNodeIteratorTests, PreDecrementationReturnsNewIterator)
+{
+    NodeMock parent;
+    NodeMock node;
+
+    configureNodeParent(node, parent);
+
+    TreeNodeIterator<NodeMock> old(&node, 2);
+    TreeNodeIterator<NodeMock> testIt(&node, 2);
+
+    TreeNodeIterator<NodeMock> ret = --testIt;
+
+    EXPECT_NE(old, ret);
+    EXPECT_EQ(ret, testIt);
+}
+
+TEST_F(TreeNodeIteratorTests, IteratorDecrementationCanSwitchToPreviousNode)
+{
+    NodeMock parent;
+    NodeMock previous;
+    NodeMock node;
+
+    configureNodeParent(node, parent);
+    configureNodeParent(previous, parent);
+
+    EXPECT_CALL(node, PreviousNode())
+        .WillOnce(ReturnRef(previous));
+
+    EXPECT_CALL(previous, count())
+        .WillRepeatedly(Return(3));
+
+    // We check if iterator points to the new node by expecting that it will ask for its storage on
+    // dereferencing.
+    NodeMock::ElementType toRet = 42;
+    EXPECT_CALL(previous, At(2))
+        .WillOnce(ReturnRef(toRet));
+
+    TreeNodeIterator<NodeMock> testIt(&node, 0);
+    testIt--; // Whole test trigger ;)
+    NodeMock::ElementType ret = *testIt;
+
+    ASSERT_EQ(toRet, ret);
+}
+
+/**
+  * This test checks if TreeNodeIterator can decremen nodes in a loop. We start at 'node' but
+  * decrementing iterator should jump to 'previous'. 'previous' doesn't have any elements that
+  * iterator can point to so it continues its search and finds 'previousPrevious' which 
+  * fortunately has some elements stored.
+  */
+TEST_F(TreeNodeIteratorTests, IteratorDecrementationCanJumpBySeveralNodes)
+{
+    NodeMock parent;
+    NodeMock previous;
+    NodeMock previousPrevious;
+    NodeMock node;
+
+    configureNodeParent(node, parent);
+    configureNodeParent(previous, parent);
+    configureNodeParent(previousPrevious, parent);
+
+    // This time we initialize iterator on the first position of node storage size. It should
+    // cause iterator to jump to the previous node on decrementation.
+    EXPECT_CALL(node, PreviousNode())
+        .WillOnce(ReturnRef(previous));
+
+    // Iterator will check if previous node has any elements that it can point to. Say no, so we can
+    // jump to the previousPrevious.
+    EXPECT_CALL(previous, count())
+        .WillRepeatedly(Return(0));
+    EXPECT_CALL(previous, PreviousNode())
+        .WillOnce(ReturnRef(previousPrevious));
+
+    // previousPrevious is the final node in this test.
+    EXPECT_CALL(previousPrevious, count())
+        .WillRepeatedly(Return(5));
+
+    // We check if iterator points to the new node by expecting that it will ask for its storage on
+    // dereferencing.
+    NodeMock::ElementType toRet = 44;
+    EXPECT_CALL(previousPrevious, At(4))
+        .WillOnce(ReturnRef(toRet));
+
+    TreeNodeIterator<NodeMock> testIt(&node, 0);
+    testIt--; // Whole test trigger ;)
+    NodeMock::ElementType ret = *testIt;
+
+    ASSERT_EQ(toRet, ret);
+}
+

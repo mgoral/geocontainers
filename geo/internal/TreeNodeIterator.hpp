@@ -71,6 +71,9 @@ public:
     }
 
     // preincrementation (++it)
+
+    // TODO: test when iterator should jump to next node, but there's no node meeting criteria. It
+    // should be set to end() node (node where node == node.parent())
     TreeNodeIteratorT& operator++()
     {
         if (*node != node->parent())
@@ -93,24 +96,28 @@ public:
         return ret;
     }
 
-    // FIXME
+    // predecrementation (--it)
     TreeNodeIteratorT& operator--()
     {
-        if (pos == 0)
+        if (pos > 0)
         {
-            while (*node != node->parent() && node->count() > 0)
-            {
-                node = &(previousNode(*node));
-                pos = node->count() - 1;
-            }
+            --pos;
         }
         else
         {
-            --pos;
+            do
+            {
+                node = &(previousNode(*node));
+            } while (*node != node->parent() && node->count() == 0);
+
+            pos = node->count();
+            if (pos > 0)
+                --pos; // pos is indexed from 0
         }
         return *this;
     }
 
+    // postdecrementation (it--)
     TreeNodeIteratorT operator--(int)
     {
         TreeNodeIteratorT ret(*this);

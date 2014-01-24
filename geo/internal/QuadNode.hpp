@@ -384,6 +384,7 @@ template <typename T, size_t lev>
 QuadNode<T, lev>& previousNode(QuadNode<T, lev>& node)
 {
     // If root node is given, then its previousNode is the rightmost one.
+    // requirement: --end()
     if (node.parent() == node)
         return node.rightMostNode();
 
