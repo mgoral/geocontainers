@@ -199,6 +199,12 @@ TEST_F(QuadNodeTests, PreviousNodeOfTheRootNodeReturnsHeader)
     ASSERT_EQ(root.parent(), previousNode(root));
 }
 
+TEST_F(QuadNodeTests, PreviousNodeOfHeaderReturnsRightMostNode)
+{
+    createTree();
+    ASSERT_EQ(root.child(1,1).child(1,0), previousNode(header));
+}
+
 TEST_F(QuadNodeTests, IsChildOfReturnsTrueWhenNodeIsAChildOfAnotherOne)
 {
     ASSERT_TRUE(root.child(0,1).child(1,0).child(1,1).isChildOf(root));
