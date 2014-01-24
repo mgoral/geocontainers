@@ -71,9 +71,6 @@ public:
     }
 
     // preincrementation (++it)
-
-    // TODO: test when iterator should jump to next node, but there's no node meeting criteria. It
-    // should be set to end() node (node where node == node.parent())
     TreeNodeIteratorT& operator++()
     {
         if (*node != node->parent())

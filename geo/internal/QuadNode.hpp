@@ -8,6 +8,8 @@
 
 #include "LocationCode.hpp"
 
+#include <iostream>
+
 namespace geo {
 
 template <typename ObjectType, size_t totalLevels>
@@ -374,8 +376,8 @@ QuadNode<T, lev>& nextNode(QuadNode<T, lev>& node)
             y = refNode->locationCode().y[refNode->level()];
         }
 
-        // At this point refNode == refNode.parent(), so it's a root. We'll return it as nextNode()
-        // of the last (rightmost) node in a tree.
+        // At this point refNode == refNode.parent(), so it's a header. We'll return it as 
+        // nextNode() of the last (rightmost) node in a tree.
         return *refNode;
     }
 }
@@ -383,7 +385,7 @@ QuadNode<T, lev>& nextNode(QuadNode<T, lev>& node)
 template <typename T, size_t lev>
 QuadNode<T, lev>& previousNode(QuadNode<T, lev>& node)
 {
-    // If root node is given, then its previousNode is the rightmost one.
+    // If header node is given, then its previousNode is the rightmost one.
     // requirement: --end()
     if (node.parent() == node)
         return node.rightMostNode();
@@ -410,6 +412,7 @@ QuadNode<T, lev>& previousNode(QuadNode<T, lev>& node)
             return *refNode;
         }
     }
+    std::cout << std::boolalpha << "header: " << (*refNode == refNode->parent()) << std::endl;
     return *refNode;
 }
 

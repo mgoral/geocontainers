@@ -256,6 +256,33 @@ TEST_F(TreeNodeIteratorTests, IteratorIncrementationCanJumpBySeveralNodes)
     ASSERT_EQ(toRet, ret);
 }
 
+TEST_F(TreeNodeIteratorTests, IncrementingStopsAtHeaderNode)
+{
+    NodeMock header;
+    NodeMock parent;
+    NodeMock node;
+
+    configureNodeParent(node, parent);
+
+    EXPECT_CALL(node, count())
+        .WillRepeatedly(Return(3));
+    EXPECT_CALL(node, NextNode())
+        .WillOnce(ReturnRef(header));
+
+    EXPECT_CALL(header, parent())
+        .WillRepeatedly(ReturnRef(header));
+    EXPECT_CALL(header, NotEquals(Ref(header)))
+        .WillRepeatedly(Return(false));
+
+
+    TreeNodeIterator<NodeMock> testIt(&node, 2);
+    testIt++;
+
+    TreeNodeIterator<NodeMock> headerIt(&header, 0);
+    ASSERT_EQ(headerIt, testIt);
+
+}
+
 TEST_F(TreeNodeIteratorTests, DecrementationOnHeaderNodeReturnsCorrectPreviousNode)
 {
     // Header: tree Super Root, usually returned by tree::end(). It is special, because it is its
@@ -417,3 +444,23 @@ TEST_F(TreeNodeIteratorTests, IteratorDecrementationCanJumpBySeveralNodes)
     ASSERT_EQ(toRet, ret);
 }
 
+TEST_F(TreeNodeIteratorTests, IteratorDoesntChangeWhenHeaderPreviousNodeIsHeaderItself)
+{
+    NodeMock node;
+
+    EXPECT_CALL(node, parent())
+        .WillRepeatedly(ReturnRef(node));
+    EXPECT_CALL(node, NotEquals(Ref(node)))
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(node, PreviousNode())
+        .WillRepeatedly(ReturnRef(node));
+    EXPECT_CALL(node, count())
+        .WillRepeatedly(Return(0));
+
+    TreeNodeIterator<NodeMock> testIt(&node, 0);
+    TreeNodeIterator<NodeMock> old(&node, 0);
+
+    testIt--;
+
+    EXPECT_EQ(old, testIt);
+}
