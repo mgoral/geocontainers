@@ -110,6 +110,12 @@ public:
             pos = node->count();
             if (pos > 0)
                 --pos; // pos is indexed from 0
+
+            // We cannot decrement to header as it would lead to creating a circular buffer
+            // (there's a requirement that --end() returns rightmost node). That's why we have to
+            // set current node to something else. nullptr is always fun :)
+            if (*node == node->parent())
+                node = nullptr;
         }
         return *this;
     }

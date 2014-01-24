@@ -15,9 +15,30 @@ class TreeNodeIteratorTests : public Test
 protected:
     void configureNodeParent(NodeMock& node, NodeMock& parent)
     {
+        // REMEMBER: Google Mock doesn't require the following statements to be called at all!
+        // If there are 'n' 'WillOnce()s' followed by 'WillRepeatedly' Google Mock will assume
+        // 'AtLeast(n)' cardinality. But we have 0 'WillOnce()s', so 'AtLeast(0)' cardinality will
+        // be used.
+        // It is useful because we can use a single configurator function while some tests require
+        // e.g. operator!=() and the others operator==().
+
         EXPECT_CALL(node, parent())
             .WillRepeatedly(ReturnRef(parent));
         EXPECT_CALL(node, NotEquals(Ref(parent)))
+            .WillRepeatedly(Return(true));
+        EXPECT_CALL(node, Equals(Ref(parent)))
+            .WillRepeatedly(Return(false));
+    }
+
+    void configureHeaderNode(NodeMock& header)
+    {
+        // @see comment at configureNodeParent
+
+        EXPECT_CALL(header, parent())
+            .WillRepeatedly(ReturnRef(header));
+        EXPECT_CALL(header, NotEquals(Ref(header)))
+            .WillRepeatedly(Return(false));
+        EXPECT_CALL(header, Equals(Ref(header)))
             .WillRepeatedly(Return(true));
     }
 };
@@ -96,10 +117,7 @@ TEST_F(TreeNodeIteratorTests, IncrementationDoesntChangeIteratorOnHeaderNode)
 
     NodeMock node;
 
-    EXPECT_CALL(node, parent())
-        .WillRepeatedly(ReturnRef(node));
-    EXPECT_CALL(node, NotEquals(Ref(node)))
-        .WillRepeatedly(Return(false));
+    configureHeaderNode(node);
 
     TreeNodeIterator<NodeMock> old(&node, 1);
     TreeNodeIterator<NodeMock> testIt(&node, 1);
@@ -263,17 +281,12 @@ TEST_F(TreeNodeIteratorTests, IncrementingStopsAtHeaderNode)
     NodeMock node;
 
     configureNodeParent(node, parent);
+    configureHeaderNode(header);
 
     EXPECT_CALL(node, count())
         .WillRepeatedly(Return(3));
     EXPECT_CALL(node, NextNode())
         .WillOnce(ReturnRef(header));
-
-    EXPECT_CALL(header, parent())
-        .WillRepeatedly(ReturnRef(header));
-    EXPECT_CALL(header, NotEquals(Ref(header)))
-        .WillRepeatedly(Return(false));
-
 
     TreeNodeIterator<NodeMock> testIt(&node, 2);
     testIt++;
@@ -293,11 +306,8 @@ TEST_F(TreeNodeIteratorTests, DecrementationOnHeaderNodeReturnsCorrectPreviousNo
     NodeMock node;
 
     configureNodeParent(previous, previousParent);
+    configureHeaderNode(node);
 
-    EXPECT_CALL(node, parent())
-        .WillRepeatedly(ReturnRef(node));
-    EXPECT_CALL(node, NotEquals(Ref(node)))
-        .WillRepeatedly(Return(false));
     EXPECT_CALL(node, PreviousNode())
         .WillOnce(ReturnRef(previous));
 
@@ -401,7 +411,7 @@ TEST_F(TreeNodeIteratorTests, IteratorDecrementationCanSwitchToPreviousNode)
 /**
   * This test checks if TreeNodeIterator can decremen nodes in a loop. We start at 'node' but
   * decrementing iterator should jump to 'previous'. 'previous' doesn't have any elements that
-  * iterator can point to so it continues its search and finds 'previousPrevious' which 
+  * iterator can point to so it continues its search and finds 'previousPrevious' which
   * fortunately has some elements stored.
   */
 TEST_F(TreeNodeIteratorTests, IteratorDecrementationCanJumpBySeveralNodes)
@@ -444,23 +454,26 @@ TEST_F(TreeNodeIteratorTests, IteratorDecrementationCanJumpBySeveralNodes)
     ASSERT_EQ(toRet, ret);
 }
 
-TEST_F(TreeNodeIteratorTests, IteratorDoesntChangeWhenHeaderPreviousNodeIsHeaderItself)
+TEST_F(TreeNodeIteratorTests, DecrementingIteratorDoesntResultInHeaderOrRoot)
 {
+    NodeMock header;
     NodeMock node;
 
-    EXPECT_CALL(node, parent())
-        .WillRepeatedly(ReturnRef(node));
-    EXPECT_CALL(node, NotEquals(Ref(node)))
-        .WillRepeatedly(Return(false));
+    configureNodeParent(node, header);
+    configureHeaderNode(header);
+
     EXPECT_CALL(node, PreviousNode())
-        .WillRepeatedly(ReturnRef(node));
-    EXPECT_CALL(node, count())
+        .WillRepeatedly(ReturnRef(header));
+    EXPECT_CALL(header, count())
         .WillRepeatedly(Return(0));
 
     TreeNodeIterator<NodeMock> testIt(&node, 0);
-    TreeNodeIterator<NodeMock> old(&node, 0);
 
     testIt--;
 
-    EXPECT_EQ(old, testIt);
+    TreeNodeIterator<NodeMock> headerIt(&header, 0);
+    TreeNodeIterator<NodeMock> rootIt(&node, 0);
+
+    EXPECT_NE(headerIt, testIt);
+    EXPECT_NE(rootIt, testIt);
 }

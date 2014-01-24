@@ -8,8 +8,6 @@
 
 #include "LocationCode.hpp"
 
-#include <iostream>
-
 namespace geo {
 
 template <typename ObjectType, size_t totalLevels>
@@ -376,7 +374,7 @@ QuadNode<T, lev>& nextNode(QuadNode<T, lev>& node)
             y = refNode->locationCode().y[refNode->level()];
         }
 
-        // At this point refNode == refNode.parent(), so it's a header. We'll return it as 
+        // At this point refNode == refNode.parent(), so it's a header. We'll return it as
         // nextNode() of the last (rightmost) node in a tree.
         return *refNode;
     }
@@ -412,7 +410,11 @@ QuadNode<T, lev>& previousNode(QuadNode<T, lev>& node)
             return *refNode;
         }
     }
-    std::cout << std::boolalpha << "header: " << (*refNode == refNode->parent()) << std::endl;
+
+    // If no previous sibling has been found, this will actually return node.parent()
+    // The special case is root: its previousNode is header node and previousNode(header) is
+    // rightmost node. It's some kind of circular buffer and we'll let iterators handle this case to
+    // avoid it (e.g by setting (--begin())::node to nullptr)
     return *refNode;
 }
 
